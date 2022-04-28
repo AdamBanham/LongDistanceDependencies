@@ -1,10 +1,10 @@
-package org.processmining.newpackageivy.algorithms;
+package org.processmining.longdistancedependencies.algorithms;
 
 import org.processmining.framework.plugin.PluginContext;
-import org.processmining.newpackageivy.models.YourFirstInput;
-import org.processmining.newpackageivy.models.YourOutput;
-import org.processmining.newpackageivy.models.YourSecondInput;
-import org.processmining.newpackageivy.parameters.YourParameters;
+import org.processmining.longdistancedependencies.models.YourFirstInput;
+import org.processmining.longdistancedependencies.models.YourOutput;
+import org.processmining.longdistancedependencies.models.YourSecondInput;
+import org.processmining.longdistancedependencies.parameters.YourParameters;
 
 public class YourAlgorithm {
 
