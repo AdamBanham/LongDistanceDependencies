@@ -42,8 +42,8 @@ public class ChoiceData2Functions {
 
 					Function a; //weight factor from log
 					{
-						int cardinality = sum(executedNext);
-						a = new Constant(cardinality / executedNext[transitionIndex]);
+						double cardinality = sum(executedNext);
+						a = new Constant(executedNext[transitionIndex] / cardinality);
 					}
 					Function b; //above the division
 					{

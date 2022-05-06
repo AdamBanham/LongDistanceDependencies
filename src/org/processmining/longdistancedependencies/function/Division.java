@@ -22,6 +22,6 @@ public class Division implements Function {
 	}
 
 	public String toString() {
-		return functionA.toString() + " / " + functionB.toString();
+		return "(" + functionA.toString() + ") / (" + functionB.toString() + ")";
 	}
 }

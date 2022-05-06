@@ -1,6 +1,7 @@
 package org.processmining.longdistancedependencies;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.concurrent.Executor;
 
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
+import org.processmining.directlyfollowsmodelminer.mining.plugins.DfmImportPlugin;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.connections.ConnectionManager;
@@ -31,7 +33,6 @@ import org.processmining.longdistancedependencies.choicedata.ChoiceData2Function
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
 import org.processmining.longdistancedependencies.function.Function;
 import org.processmining.plugins.InductiveMiner.mining.MiningParameters;
-import org.processmining.plugins.InductiveMiner.plugins.EfficientTreeImportPlugin;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFiltered;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFilteredImpl;
@@ -42,11 +43,12 @@ public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
 		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log.xes.gz");
 		File modelFile = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/Efficient tree of testlog.tree");
+				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog.dfm");
 
 		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
-		IvMModel model = new IvMModel(EfficientTreeImportPlugin.importFromFile(modelFile));
+		//IvMModel model = new IvMModel(EfficientTreeImportPlugin.importFromFile(modelFile));
+		IvMModel model = new IvMModel(DfmImportPlugin.readFile(new FileInputStream(modelFile)));
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
 
 		//align
