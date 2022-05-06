@@ -3,16 +3,18 @@ package org.processmining.longdistancedependencies.choicedata;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.FixedMultiset;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIterator;
-import org.processmining.longdistancedependencies.function.Constant;
 import org.processmining.longdistancedependencies.function.Division;
 import org.processmining.longdistancedependencies.function.Function;
 import org.processmining.longdistancedependencies.function.Product;
-import org.processmining.longdistancedependencies.function.Subtraction;
 import org.processmining.longdistancedependencies.function.Sum;
 import org.processmining.longdistancedependencies.function.Variable;
 import org.processmining.longdistancedependencies.function.VariablePower;
+
+import gnu.trove.list.TDoubleList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 /**
  * Parameters:
@@ -27,8 +29,9 @@ import org.processmining.longdistancedependencies.function.VariablePower;
  *
  */
 public class ChoiceData2Functions {
-	public static List<Function> convert(ChoiceData data, int numberOfTransitions) {
-		List<Function> result = new ArrayList<>();
+	public static Pair<List<Function>, double[]> convert(ChoiceData data, int numberOfTransitions) {
+		List<Function> equations = new ArrayList<>();
+		TDoubleList values = new TDoubleArrayList();
 
 		ChoiceIterator it = data.iterator();
 		while (it.hasNext()) {
@@ -40,10 +43,10 @@ public class ChoiceData2Functions {
 				int transitionIndex = FixedMultiset.next(executedNext, -1);
 				while (transitionIndex > 0) {
 
-					Function a; //weight factor from log
+					double a; //weight factor from log
 					{
 						double cardinality = sum(executedNext);
-						a = new Constant(executedNext[transitionIndex] / cardinality);
+						a = executedNext[transitionIndex] / cardinality;
 					}
 					Function b; //above the division
 					{
@@ -66,15 +69,16 @@ public class ChoiceData2Functions {
 
 						c = new Sum(elems);
 					}
-					Function function = new Subtraction(a, new Division(b, c));
-					result.add(function);
+					Function function = new Division(b, c);
+					equations.add(function);
+					values.add(a);
 
 					transitionIndex = FixedMultiset.next(executedNext, transitionIndex);
 				}
 			}
 		}
 
-		return result;
+		return Pair.create(equations, values.toArray());
 	}
 
 	private static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions) {

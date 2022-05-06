@@ -3,10 +3,12 @@ package org.processmining.longdistancedependencies;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.math3.util.Pair;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.directlyfollowsmodelminer.mining.plugins.DfmImportPlugin;
@@ -27,11 +29,11 @@ import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.events.ProgressEventListener.ListenerList;
 import org.processmining.framework.plugin.impl.FieldSetException;
 import org.processmining.framework.providedobjects.ProvidedObjectManager;
-import org.processmining.framework.util.Pair;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
 import org.processmining.longdistancedependencies.function.Function;
+import org.processmining.longdistancedependencies.solve.Solver;
 import org.processmining.plugins.InductiveMiner.mining.MiningParameters;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFiltered;
@@ -66,8 +68,20 @@ public class LongDistancePlugin {
 		System.out.println(choiceData);
 
 		//to functions
-		List<Function> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes());
-		System.out.println(equations);
+		Pair<List<Function>, double[]> equations = ChoiceData2Functions.convert(choiceData,
+				model.getMaxNumberOfNodes());
+		System.out.println("equations: ");
+		for (int i = 0; i < equations.getFirst().size(); i++) {
+			System.out.println(equations.getSecond()[i] + " = " + equations.getFirst().get(i));
+		}
+
+		//solve
+		double[] result = Solver.solve(equations.getFirst(), equations.getSecond(),
+				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes());
+
+		System.out.println();
+		System.out.println("result:");
+		System.out.println(Arrays.toString(result));
 	}
 
 	public static class FakeContext implements PluginContext {
@@ -220,7 +234,7 @@ public class LongDistancePlugin {
 			return null;
 		}
 
-		public Pair<PluginDescriptor, Integer> getPluginDescriptor() {
+		public org.processmining.framework.util.Pair<PluginDescriptor, Integer> getPluginDescriptor() {
 			// TODO Auto-generated method stub
 			return null;
 		}
