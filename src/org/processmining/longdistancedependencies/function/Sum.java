@@ -25,4 +25,19 @@ public class Sum implements Function {
 		return sum;
 	}
 
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+
+		result.append("(");
+		for (int f = 0; f < functions.length; f++) {
+			result.append(functions[f]);
+
+			if (f < functions.length - 1) {
+				result.append(") + (");
+			}
+		}
+		result.append(")");
+
+		return result.toString();
+	}
 }

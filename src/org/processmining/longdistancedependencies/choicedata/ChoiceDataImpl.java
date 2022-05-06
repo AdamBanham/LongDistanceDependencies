@@ -25,7 +25,10 @@ public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements Choi
 
 	public void addExecution(int[] history, int executeNext) {
 		int[] nextTransitions = new int[history.length];
-		nextTransitions = putIfAbsent(history, nextTransitions);
+		int[] nextTransitionsT = putIfAbsent(history, nextTransitions);
+		if (nextTransitionsT != null) {
+			nextTransitions = nextTransitionsT;
+		}
 		nextTransitions[executeNext]++;
 	}
 
@@ -54,5 +57,21 @@ public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements Choi
 				return thisNextTransitions;
 			}
 		};
+	}
+
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+
+		for (ChoiceIterator it = iterator(); it.hasNext();) {
+			int[] history = it.next();
+			int[] executedNext = it.getExecutedNext();
+
+			result.append(Arrays.toString(history));
+			result.append(" ");
+			result.append(Arrays.toString(executedNext));
+			result.append("\n");
+		}
+
+		return result.toString();
 	}
 }

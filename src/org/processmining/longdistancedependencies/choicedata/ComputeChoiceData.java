@@ -11,8 +11,8 @@ import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMMove;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMTrace;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMTraceImpl.ActivityInstanceIterator;
 
-public class ComputeChoiceData<T> {
-	public ChoiceData compute(IvMLogFiltered log, IvMModel model, ProMCanceller canceller) {
+public class ComputeChoiceData {
+	public static ChoiceData compute(IvMLogFiltered log, IvMModel model, ProMCanceller canceller) {
 		ChoiceData result = new ChoiceDataImpl();
 		for (IteratorWithPosition<IvMTrace> it = log.iterator(); it.hasNext();) {
 			IvMTrace trace = it.next();
