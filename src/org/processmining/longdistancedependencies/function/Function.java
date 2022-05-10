@@ -10,4 +10,6 @@ public interface Function {
 	public double getValue(double[] parameters);
 
 	public double getPartialDerivative(int parameterIndex, double[] parameters);
+
+	public String toLatex();
 }

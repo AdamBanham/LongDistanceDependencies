@@ -22,4 +22,8 @@ public class Variable implements Function {
 	public String toString() {
 		return "par" + parameterIndex;
 	}
+
+	public String toLatex() {
+		return "p_{" + parameterIndex + "}";
+	}
 }

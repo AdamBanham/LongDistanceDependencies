@@ -20,14 +20,15 @@ public class Product implements Function {
 		double sum = 0;
 
 		for (int pivot = 0; pivot < functions.length; pivot++) {
-
+			double product = 1;
 			for (int f = 0; f < pivot; f++) {
-				sum += functions[f].getValue(parameters);
+				product *= functions[f].getValue(parameters);
 			}
-			sum += functions[pivot].getPartialDerivative(parameterIndex, parameters);
+			product *= functions[pivot].getPartialDerivative(parameterIndex, parameters);
 			for (int f = pivot + 1; f < functions.length; f++) {
-				sum += functions[f].getValue(parameters);
+				product *= functions[f].getValue(parameters);
 			}
+			sum += product;
 		}
 
 		return sum;
@@ -45,6 +46,20 @@ public class Product implements Function {
 			}
 		}
 		result.append(")");
+
+		return result.toString();
+	}
+
+	public String toLatex() {
+		StringBuilder result = new StringBuilder();
+
+		for (int f = 0; f < functions.length; f++) {
+			result.append(functions[f].toLatex());
+
+			if (f < functions.length - 1) {
+				result.append(" * ");
+			}
+		}
 
 		return result.toString();
 	}

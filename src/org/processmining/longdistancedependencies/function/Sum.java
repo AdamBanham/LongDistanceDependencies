@@ -40,4 +40,18 @@ public class Sum implements Function {
 
 		return result.toString();
 	}
+
+	public String toLatex() {
+		StringBuilder result = new StringBuilder();
+
+		for (int f = 0; f < functions.length; f++) {
+			result.append(functions[f].toLatex());
+
+			if (f < functions.length - 1) {
+				result.append(" + ");
+			}
+		}
+
+		return result.toString();
+	}
 }

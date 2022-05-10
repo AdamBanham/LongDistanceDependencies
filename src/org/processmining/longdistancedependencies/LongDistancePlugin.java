@@ -43,7 +43,7 @@ import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
 public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log.xes.gz");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log 4800.xes.gz");
 		File modelFile = new File(
 				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog.dfm");
 
@@ -67,21 +67,58 @@ public class LongDistancePlugin {
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
 		System.out.println(choiceData);
 
+		//find fixed parameters
+		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData);
+		System.out.println("fixing parameters " + Arrays.toString(parametersToFix));
+
 		//to functions
-		Pair<List<Function>, double[]> equations = ChoiceData2Functions.convert(choiceData,
-				model.getMaxNumberOfNodes());
+		Pair<List<Function>, double[]> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
+				parametersToFix);
 		System.out.println("equations: ");
 		for (int i = 0; i < equations.getFirst().size(); i++) {
-			System.out.println(equations.getSecond()[i] + " = " + equations.getFirst().get(i));
+			System.out.println(equations.getSecond()[i] + " ={}& " + equations.getFirst().get(i).toLatex() + "\\\\");
 		}
 
 		//solve
 		double[] result = Solver.solve(equations.getFirst(), equations.getSecond(),
-				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes());
+				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes(), parametersToFix,
+				ChoiceData2Functions.fixValue);
 
 		System.out.println();
 		System.out.println("result:");
 		System.out.println(Arrays.toString(result));
+		System.out.println(toString(result, model));
+	}
+
+	public static String toString(double[] parameters, IvMModel model) {
+		StringBuilder result = new StringBuilder();
+
+		for (int node : model.getAllNodes()) {
+			if (model.isActivity(node)) {
+				result.append(model.getActivityName(node));
+			} else {
+				result.append("silent step #");
+				result.append(node);
+			}
+			result.append(": base weight ");
+			result.append(parameters[ChoiceData2Functions.getParameterIndexBase(node)]);
+			result.append(", \tadjustment factors: ");
+			for (int node2 : model.getAllNodes()) {
+				if (model.isActivity(node2)) {
+					result.append(model.getActivityName(node2));
+				} else {
+					result.append("silent step #");
+					result.append(node2);
+				}
+				result.append(": ");
+				result.append(parameters[ChoiceData2Functions.getParameterIndexAdjustment(node, node2,
+						model.getMaxNumberOfNodes())]);
+				result.append(", ");
+			}
+			result.append("\n");
+		}
+
+		return result.toString();
 	}
 
 	public static class FakeContext implements PluginContext {

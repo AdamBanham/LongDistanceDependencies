@@ -15,10 +15,9 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.function.Function;
 
-import cern.colt.Arrays;
-
 public class Solver {
-	public static double[] solve(List<Function> equations, double[] values, int numberOfParameters) {
+	public static double[] solve(List<Function> equations, double[] values, int numberOfParameters, int[] fixParameters,
+			double fixValue) {
 		MultivariateJacobianFunction jfunction = new MultivariateJacobianFunction() {
 
 			public Pair<RealVector, RealMatrix> value(RealVector point) {
@@ -38,18 +37,24 @@ public class Solver {
 					}
 				}
 
+				System.out.println("point " + point);
+				System.out.println("value " + value);
+				//System.out.println("jacobian " + jacobian);
+				System.out.println();
 				return new Pair<RealVector, RealMatrix>(value, jacobian);
 			}
 		};
 
 		//initial guess: all weights are equal, and no adjustments
-		double[] guess = new double[] { 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1 };
-		RealVector initialGuess = new ArrayRealVector(guess);
-		//RealVector initialGuess = new ArrayRealVector(numberOfParameters);
-		//initialGuess.set(1);
+		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
+		initialGuess.set(1);
+		for (int parameter : fixParameters) {
+			initialGuess.setEntry(parameter, fixValue);
+		}
 
-		System.out.println("Initial guess");
-		System.out.println(Arrays.toString(guess));
+		System.out.println("Initial guess: " + initialGuess);
+		//		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
+		//		initialGuess.set(2);
 
 		LeastSquaresProblem problem = new LeastSquaresBuilder()//
 				.start(initialGuess)//
@@ -61,7 +66,7 @@ public class Solver {
 				.build();
 		LeastSquaresOptimizer optimiser = new LevenbergMarquardtOptimizer().withCostRelativeTolerance(1.0e-12)
 				.withParameterRelativeTolerance(1.0e-12);
-		//LeastSquaresOptimizer optimiser = new GaussNewtonOptimizer();
+		//LeastSquaresOptimizer optimiser = new GaussNewtonOptimizer(GaussNewtonOptimizer.Decomposition.CHOLESKY);
 		Optimum optimum = optimiser.optimize(problem);
 
 		System.out.println("RMS: " + optimum.getRMS());

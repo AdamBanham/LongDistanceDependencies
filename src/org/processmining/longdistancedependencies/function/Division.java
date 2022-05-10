@@ -15,13 +15,18 @@ public class Division implements Function {
 	}
 
 	public double getPartialDerivative(int parameterIndex, double[] parameters) {
+		double derA = functionA.getPartialDerivative(parameterIndex, parameters);
+		double valueA = functionA.getValue(parameters);
+		double derB = functionB.getPartialDerivative(parameterIndex, parameters);
 		double valueB = functionB.getValue(parameters);
-		return (functionA.getPartialDerivative(parameterIndex, parameters) * valueB
-				- functionA.getValue(parameters) * functionB.getPartialDerivative(parameterIndex, parameters))
-				/ (valueB * valueB);
+		return (derA * valueB - valueA * derB) / (valueB * valueB);
 	}
 
 	public String toString() {
 		return "(" + functionA.toString() + ") / (" + functionB.toString() + ")";
+	}
+
+	public String toLatex() {
+		return "\\frac{" + functionA.toLatex() + "}{" + functionB.toLatex() + "}";
 	}
 }

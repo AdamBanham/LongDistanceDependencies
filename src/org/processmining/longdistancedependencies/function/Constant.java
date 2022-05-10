@@ -19,4 +19,8 @@ public class Constant implements Function {
 	public String toString() {
 		return value + "";
 	}
+
+	public String toLatex() {
+		return value + "";
+	}
 }

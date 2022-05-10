@@ -24,4 +24,8 @@ public class VariablePower implements Function {
 	public String toString() {
 		return "par" + parameterIndex + "^" + power;
 	}
+
+	public String toLatex() {
+		return "p_{" + parameterIndex + "}^{" + power + "}";
+	}
 }
