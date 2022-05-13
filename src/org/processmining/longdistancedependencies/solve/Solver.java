@@ -16,6 +16,11 @@ import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.function.Function;
 
 public class Solver {
+
+	//other solvers:
+
+	//https://scipopt.org/index.php#license
+
 	public static double[] solve(List<Function> equations, double[] values, int numberOfParameters, int[] fixParameters,
 			double fixValue) {
 		MultivariateJacobianFunction jfunction = new MultivariateJacobianFunction() {
