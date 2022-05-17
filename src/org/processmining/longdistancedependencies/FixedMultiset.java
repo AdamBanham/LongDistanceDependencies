@@ -1,6 +1,11 @@
 package org.processmining.longdistancedependencies;
 
 public class FixedMultiset {
+
+	public static int[] init(int size) {
+		return new int[size];
+	}
+
 	/**
 	 * 
 	 * @param multiset

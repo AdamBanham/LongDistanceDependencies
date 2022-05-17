@@ -14,9 +14,6 @@ import org.processmining.plugins.InductiveMiner.graphs.ConnectedComponents2;
 import org.processmining.plugins.InductiveMiner.graphs.Graph;
 import org.processmining.plugins.InductiveMiner.graphs.GraphImplQuadratic;
 
-import gnu.trove.list.TDoubleList;
-import gnu.trove.list.array.TDoubleArrayList;
-
 /**
  * Parameters:
  * 
@@ -33,12 +30,12 @@ public class ChoiceData2Functions {
 
 	public static final double fixValue = 1;
 
-	public static Pair<List<Function>, double[]> convert(ChoiceData data, int numberOfTransitions,
+	public static Pair<List<Function>, List<Function>> convert(ChoiceData data, int numberOfTransitions,
 			int[] fixParameters) {
 
 		FunctionFactory functionFactory = new FunctionFactoryImpl(fixValue, fixParameters);
 		List<Function> equations = new ArrayList<>();
-		TDoubleList values = new TDoubleArrayList();
+		List<Function> values = new ArrayList<>();
 
 		ChoiceIterator it = data.iterator();
 		while (it.hasNext()) {
@@ -50,10 +47,11 @@ public class ChoiceData2Functions {
 				int transitionIndex = FixedMultiset.next(executedNext, -1);
 				while (transitionIndex > 0) {
 
-					double a; //weight factor from log
+					Function a; //weight factor from log
 					{
 						double cardinality = sum(executedNext);
-						a = executedNext[transitionIndex] / cardinality;
+						a = functionFactory.division(functionFactory.constant(executedNext[transitionIndex]),
+								functionFactory.constant(cardinality));
 					}
 					Function b; //above the division
 					{
@@ -85,7 +83,7 @@ public class ChoiceData2Functions {
 			}
 		}
 
-		return Pair.create(equations, values.toArray());
+		return Pair.create(values, equations);
 	}
 
 	/**

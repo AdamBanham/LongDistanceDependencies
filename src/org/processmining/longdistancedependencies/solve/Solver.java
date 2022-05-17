@@ -15,13 +15,15 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.function.Function;
 
+import cern.colt.Arrays;
+
 public class Solver {
 
 	//other solvers:
 
 	//https://scipopt.org/index.php#license
 
-	public static double[] solve(List<Function> equations, double[] values, int numberOfParameters, int[] fixParameters,
+	public static double[] solve(double[] values, List<Function> equations, int numberOfParameters, int[] fixParameters,
 			double fixValue) {
 		MultivariateJacobianFunction jfunction = new MultivariateJacobianFunction() {
 
@@ -42,10 +44,10 @@ public class Solver {
 					}
 				}
 
+				System.out.println();
 				System.out.println("point " + point);
 				System.out.println("value " + value);
 				//System.out.println("jacobian " + jacobian);
-				System.out.println();
 				return new Pair<RealVector, RealMatrix>(value, jacobian);
 			}
 		};
@@ -56,8 +58,10 @@ public class Solver {
 		for (int parameter : fixParameters) {
 			initialGuess.setEntry(parameter, fixValue);
 		}
+		initialGuess.setEntry(7, 2);
 
 		System.out.println("Initial guess: " + initialGuess);
+		System.out.println("target " + Arrays.toString(values));
 		//		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
 		//		initialGuess.set(2);
 

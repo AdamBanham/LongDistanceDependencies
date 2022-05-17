@@ -72,15 +72,23 @@ public class LongDistancePlugin {
 		System.out.println("fixing parameters " + Arrays.toString(parametersToFix));
 
 		//to functions
-		Pair<List<Function>, double[]> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
-				parametersToFix);
+		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
+				model.getMaxNumberOfNodes(), parametersToFix);
 		System.out.println("equations: ");
 		for (int i = 0; i < equations.getFirst().size(); i++) {
-			System.out.println(equations.getSecond()[i] + " ={}& " + equations.getFirst().get(i).toLatex() + "\\\\");
+			System.out.println(
+					equations.getFirst().get(i).toLatex() + " ={}& " + equations.getSecond().get(i).toLatex() + "\\\\");
+		}
+
+		double[] values = new double[equations.getFirst().size()];
+		int i = 0;
+		for (Function function : equations.getFirst()) {
+			values[i] = function.getValue(null);
+			i++;
 		}
 
 		//solve
-		double[] result = Solver.solve(equations.getFirst(), equations.getSecond(),
+		double[] result = Solver.solve(values, equations.getSecond(),
 				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes(), parametersToFix,
 				ChoiceData2Functions.fixValue);
 
