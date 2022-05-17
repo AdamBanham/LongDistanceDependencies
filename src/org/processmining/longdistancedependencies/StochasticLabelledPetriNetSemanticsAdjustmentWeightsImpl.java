@@ -4,8 +4,7 @@ import java.util.Arrays;
 
 import org.processmining.stochasticlabelledpetrinets.StochasticLabelledPetriNetSemanticsImpl;
 
-public class StochasticLabelledPetriNetSemanticsAdjustmentWeightsImpl extends StochasticLabelledPetriNetSemanticsImpl
-		implements StochasticLabelledPetriNetSemanticsAdjustmentWeights {
+public class StochasticLabelledPetriNetSemanticsAdjustmentWeightsImpl extends StochasticLabelledPetriNetSemanticsImpl {
 
 	private int[] history;
 	private final StochasticLabelledPetriNetAdjustmentWeights net;
@@ -14,12 +13,15 @@ public class StochasticLabelledPetriNetSemanticsAdjustmentWeightsImpl extends St
 		super(net);
 		this.net = net;
 		history = FixedMultiset.init(net.getNumberOfTransitions());
+		Arrays.fill(history, 0);
 	}
 
 	@Override
 	public void setInitialState() {
 		super.setInitialState();
-		Arrays.fill(history, 0);
+		if (history != null) {
+			Arrays.fill(history, 0);
+		}
 	}
 
 	@Override

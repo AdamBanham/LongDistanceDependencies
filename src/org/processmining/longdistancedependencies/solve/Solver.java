@@ -58,7 +58,7 @@ public class Solver {
 		for (int parameter : fixParameters) {
 			initialGuess.setEntry(parameter, fixValue);
 		}
-		initialGuess.setEntry(7, 2);
+		initialGuess.setEntry(7, 1.1);
 
 		System.out.println("Initial guess: " + initialGuess);
 		System.out.println("target " + Arrays.toString(values));

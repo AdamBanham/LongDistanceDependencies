@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.processmining.stochasticlabelledpetrinets.StochasticLabelledPetriNetImpl;
+import org.processmining.stochasticlabelledpetrinets.StochasticLabelledPetriNetSemantics;
 
 import gnu.trove.list.TDoubleList;
 import gnu.trove.list.array.TDoubleArrayList;
@@ -36,10 +37,12 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImpl extends StochasticL
 		}
 
 		TDoubleArrayList newArray = new TDoubleArrayList(newNumberOfTransitions);
-		newArray.fill(1);
+		for (int i = 0; i < newNumberOfTransitions; i++) {
+			newArray.add(1);
+		}
 		transitionAdjustmentFactors.add(newArray);
 
-		return newNumberOfTransitions;
+		return newNumberOfTransitions - 1;
 	}
 
 	@Override
@@ -60,4 +63,8 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImpl extends StochasticL
 		transitionAdjustmentFactors.get(transitionTarget).set(transitionHistory, weight);
 	}
 
+	@Override
+	public StochasticLabelledPetriNetSemantics getDefaultSemantics() {
+		return new StochasticLabelledPetriNetSemanticsAdjustmentWeightsImpl(this);
+	}
 }

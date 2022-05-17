@@ -1,4 +1,4 @@
-package org.processmining.longdistancedependencies;
+package org.processmining.longdistancedependencies.plugins;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 import org.apache.commons.math3.util.Pair;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
+import org.deckfour.xes.model.XTrace;
 import org.processmining.directlyfollowsmodelminer.mining.plugins.DfmImportPlugin;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
@@ -29,29 +30,44 @@ import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.events.ProgressEventListener.ListenerList;
 import org.processmining.framework.plugin.impl.FieldSetException;
 import org.processmining.framework.providedobjects.ProvidedObjectManager;
+import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdjustmentWeights;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
 import org.processmining.longdistancedependencies.function.Function;
+import org.processmining.longdistancedependencies.generator.LongDistanceGenerator;
+import org.processmining.longdistancedependencies.generator.TestModel;
 import org.processmining.longdistancedependencies.solve.Solver;
 import org.processmining.plugins.InductiveMiner.mining.MiningParameters;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFiltered;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFilteredImpl;
 import org.processmining.plugins.inductiveVisualMiner.plugins.InductiveVisualMinerAlignmentComputation;
-import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
+import org.processmining.statisticaltests.test.XLogWriterIncremental;
 
 public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log 4800.xes.gz");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log auto.xes.gz");
 		File modelFile = new File(
 				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog.dfm");
-
-		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
-		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
-		//IvMModel model = new IvMModel(EfficientTreeImportPlugin.importFromFile(modelFile));
+		//
+		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
+		//		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
+		//		//IvMModel model = new IvMModel(EfficientTreeImportPlugin.importFromFile(modelFile));
 		IvMModel model = new IvMModel(DfmImportPlugin.readFile(new FileInputStream(modelFile)));
-		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
+		//		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
+
+		StochasticLabelledPetriNetAdjustmentWeights net = TestModel.generate();
+		XLog log = LongDistanceGenerator.generate(net, 1000);
+
+		{
+			XLogWriterIncremental writer = new XLogWriterIncremental(logFile);
+			for (XTrace trace : log) {
+				writer.writeTrace(trace);
+
+			}
+			writer.close();
+		}
 
 		//align
 		ProMCanceller canceller = new ProMCanceller() {
