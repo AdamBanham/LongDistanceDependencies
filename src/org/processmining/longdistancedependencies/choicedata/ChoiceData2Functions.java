@@ -45,7 +45,7 @@ public class ChoiceData2Functions {
 			if (FixedMultiset.setSizeLargerThanOne(executedNext)) {
 
 				int transitionIndex = FixedMultiset.next(executedNext, -1);
-				while (transitionIndex > 0) {
+				while (transitionIndex >= 0) {
 
 					Function a; //weight factor from log
 					{

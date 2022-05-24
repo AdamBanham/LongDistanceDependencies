@@ -20,7 +20,7 @@ public class LongDistanceGenerator {
 	public static XLog generate(StochasticLabelledPetriNet net, int numberOfTraces) {
 		StochasticLabelledPetriNetSemantics semantics = net.getDefaultSemantics();
 
-		Random random = new Random(1);
+		Random random = new Random();
 		XLog result = factory.createLog();
 
 		for (int i = 0; i < numberOfTraces; i++) {
@@ -44,7 +44,7 @@ public class LongDistanceGenerator {
 					.nextSetBit(transition + 1)) {
 
 				chosenWeight -= semantics.getTransitionWeight(transition);
-				if (chosenWeight <= 0) {
+				if (chosenWeight < 0) {
 					//execute this transition
 
 					if (!semantics.isTransitionSilent(transition)) {

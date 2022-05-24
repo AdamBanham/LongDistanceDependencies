@@ -47,9 +47,9 @@ import org.processmining.statisticaltests.test.XLogWriterIncremental;
 
 public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log auto.xes.gz");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog2 100.xes.gz");
 		File modelFile = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog.dfm");
+				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog2.dfm");
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		//		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
@@ -58,7 +58,7 @@ public class LongDistancePlugin {
 		//		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
 
 		StochasticLabelledPetriNetAdjustmentWeights net = TestModel.generate();
-		XLog log = LongDistanceGenerator.generate(net, 1000);
+		XLog log = LongDistanceGenerator.generate(net, 100000);
 
 		{
 			XLogWriterIncremental writer = new XLogWriterIncremental(logFile);

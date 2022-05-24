@@ -16,16 +16,19 @@ public class TestModel {
 
 		int a = result.addTransition("a", 1);
 		int b = result.addTransition("b", 1);
-		int c = result.addTransition(1);
+		int c = result.addTransition("c", 1);
+		int d = result.addTransition("d", 1);
 
 		result.addPlaceTransitionArc(source, a);
+		result.addPlaceTransitionArc(source, b);
 		result.addTransitionPlaceArc(a, p1);
-		result.addPlaceTransitionArc(p1, b);
 		result.addTransitionPlaceArc(b, p1);
 		result.addPlaceTransitionArc(p1, c);
+		result.addPlaceTransitionArc(p1, d);
 		result.addTransitionPlaceArc(c, sink);
-
-		result.setTransitionAdjustmentWeight(b, b, 1.1);
+		result.addTransitionPlaceArc(d, sink);
+		
+		result.setTransitionAdjustmentWeight(c, a, 2);
 
 		return result;
 	}
