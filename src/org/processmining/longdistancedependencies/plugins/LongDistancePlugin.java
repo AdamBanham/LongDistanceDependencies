@@ -84,7 +84,7 @@ public class LongDistancePlugin {
 		System.out.println(choiceData);
 
 		//find fixed parameters
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData);
+		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes());
 		System.out.println("fixing parameters " + Arrays.toString(parametersToFix));
 
 		//to functions

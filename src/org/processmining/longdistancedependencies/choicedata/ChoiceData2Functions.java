@@ -14,6 +14,9 @@ import org.processmining.plugins.InductiveMiner.graphs.ConnectedComponents2;
 import org.processmining.plugins.InductiveMiner.graphs.Graph;
 import org.processmining.plugins.InductiveMiner.graphs.GraphImplQuadratic;
 
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+
 /**
  * Parameters:
  * 
@@ -87,16 +90,16 @@ public class ChoiceData2Functions {
 	}
 
 	/**
-	 * The base weight parameters can be limited slightly by fixing one of each
-	 * connected component. This function takes an arbitrary transition
-	 * parameter from each connected component.
+	 * The parameters can be limited by fixing all parameters of one transition
+	 * of each connected component. This function takes an transition from each
+	 * connected component.
 	 * 
 	 * This assumes that the base weight parameters are numbered 0..n-1.
 	 * 
 	 * @param data
 	 * @return
 	 */
-	public static int[] getParametersToFix(ChoiceData data) {
+	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions) {
 
 		Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
 
@@ -120,13 +123,17 @@ public class ChoiceData2Functions {
 		List<Set<Integer>> components = ConnectedComponents2.compute(graph);
 		System.out.println("components " + components);
 
-		int[] result = new int[components.size()];
-		int i = 0;
+		//pick an arbitrary transition and add all of its parameters
+		TIntList result = new TIntArrayList();
 		for (Set<Integer> component : components) {
-			result[i] = component.iterator().next();
-			i++;
+			int transition = component.iterator().next();
+			result.add(transition); //base weight
+			for (int i = 0; i < numberOfTransitions; i++) {
+				result.add((transition + 1) * numberOfTransitions + i);
+			}
 		}
-		return result;
+
+		return result.toArray();
 	}
 
 	public static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions,
