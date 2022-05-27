@@ -5,6 +5,8 @@ public interface FunctionFactory {
 
 	public Function variablePower(int parameterIndex, int power);
 
+	public Function variablePower(int parameterIndex, String name, int power);
+
 	public Function product(Function... functions);
 
 	public Function division(Function functionA, Function functionB);
@@ -12,4 +14,6 @@ public interface FunctionFactory {
 	public Function sum(Function... functions);
 
 	public Function variable(int parameterIndex);
+
+	public Function variable(int parameterIndex, String name);
 }

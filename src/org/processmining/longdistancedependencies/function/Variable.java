@@ -3,9 +3,11 @@ package org.processmining.longdistancedependencies.function;
 public class Variable implements Function {
 
 	private final int parameterIndex;
+	private final String name;
 
-	public Variable(int parameterIndex) {
+	public Variable(int parameterIndex, String name) {
 		this.parameterIndex = parameterIndex;
+		this.name = name;
 	}
 
 	public double getValue(double[] parameters) {
@@ -20,10 +22,16 @@ public class Variable implements Function {
 	}
 
 	public String toString() {
-		return "par" + parameterIndex;
+		if (name == null) {
+			return "par" + parameterIndex;
+		}
+		return name;
 	}
 
 	public String toLatex() {
-		return "p_{" + parameterIndex + "}";
+		if (name == null) {
+			return "p_{" + parameterIndex + "}";
+		}
+		return name;
 	}
 }

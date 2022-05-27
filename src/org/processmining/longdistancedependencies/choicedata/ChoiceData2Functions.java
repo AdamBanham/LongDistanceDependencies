@@ -13,6 +13,7 @@ import org.processmining.longdistancedependencies.function.FunctionFactoryImpl;
 import org.processmining.plugins.InductiveMiner.graphs.ConnectedComponents2;
 import org.processmining.plugins.InductiveMiner.graphs.Graph;
 import org.processmining.plugins.InductiveMiner.graphs.GraphImplQuadratic;
+import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
@@ -34,7 +35,7 @@ public class ChoiceData2Functions {
 	public static final double fixValue = 1;
 
 	public static Pair<List<Function>, List<Function>> convert(ChoiceData data, int numberOfTransitions,
-			int[] fixParameters) {
+			int[] fixParameters, IvMModel model) {
 
 		FunctionFactory functionFactory = new FunctionFactoryImpl(fixValue, fixParameters);
 		List<Function> equations = new ArrayList<>();
@@ -48,6 +49,7 @@ public class ChoiceData2Functions {
 			if (FixedMultiset.setSizeLargerThanOne(executedNext)) {
 
 				int transitionIndex = FixedMultiset.next(executedNext, -1);
+				transitionIndex = FixedMultiset.next(executedNext, transitionIndex); //optimisation: one equality does not add any information
 				while (transitionIndex >= 0) {
 
 					Function a; //weight factor from log
@@ -58,7 +60,8 @@ public class ChoiceData2Functions {
 					}
 					Function b; //above the division
 					{
-						b = getTransitionWeightFunction(history, transitionIndex, numberOfTransitions, functionFactory);
+						b = getTransitionWeightFunction(history, transitionIndex, numberOfTransitions, functionFactory,
+								model);
 					}
 					Function c; //below the division
 					{
@@ -69,7 +72,7 @@ public class ChoiceData2Functions {
 						while (transitionIndexTT >= 0) {
 
 							elems[elemIndex] = getTransitionWeightFunction(history, transitionIndexTT,
-									numberOfTransitions, functionFactory);
+									numberOfTransitions, functionFactory, model);
 
 							elemIndex++;
 							transitionIndexTT = FixedMultiset.next(executedNext, transitionIndexTT);
@@ -137,11 +140,12 @@ public class ChoiceData2Functions {
 	}
 
 	public static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions,
-			FunctionFactory functionFactory) {
+			FunctionFactory functionFactory, IvMModel model) {
 		Function b;
 		Function[] elems = new Function[FixedMultiset.setSize(history) + 1];
 
-		elems[0] = functionFactory.variable(getParameterIndexBase(transitionIndex)); //base weight
+		elems[0] = functionFactory.variable(getParameterIndexBase(transitionIndex),
+				getParameterNameBase(transitionIndex, model)); //base weight
 
 		int elemIndex = 1;
 		int transitionIndexT = FixedMultiset.next(history, -1);
@@ -149,6 +153,7 @@ public class ChoiceData2Functions {
 
 			elems[elemIndex] = functionFactory.variablePower(
 					getParameterIndexAdjustment(transitionIndex, transitionIndexT, numberOfTransitions),
+					getParameterNameAdjustment(transitionIndex, transitionIndexT, numberOfTransitions, model),
 					history[transitionIndexT]);
 
 			transitionIndexT = FixedMultiset.next(history, transitionIndexT);
@@ -163,8 +168,18 @@ public class ChoiceData2Functions {
 		return transitionIndex;
 	}
 
+	public static String getParameterNameBase(int transitionIndex, IvMModel model) {
+		return "\\parB_{" + model.getActivityName(transitionIndex) + "}";
+	}
+
 	public static int getParameterIndexAdjustment(int transitionIndex, int transitionIndexT, int numberOfTransitions) {
 		return numberOfTransitions + transitionIndex * numberOfTransitions + transitionIndexT;
+	}
+
+	public static String getParameterNameAdjustment(int transitionIndex, int transitionIndexT, int numberOfTransitions,
+			IvMModel model) {
+		return "\\parD_{" + model.getActivityName(transitionIndex) + "," + model.getActivityName(transitionIndexT)
+				+ "}";
 	}
 
 	public static int sum(int[] array) {

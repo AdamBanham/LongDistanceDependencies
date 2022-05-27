@@ -4,10 +4,12 @@ public class VariablePower implements Function {
 
 	private final int parameterIndex;
 	private final int power;
+	private final String name;
 
-	public VariablePower(int parameterIndex, int power) {
+	public VariablePower(int parameterIndex, String name, int power) {
 		this.parameterIndex = parameterIndex;
 		this.power = power;
+		this.name = name;
 	}
 
 	public double getValue(double[] parameters) {
@@ -22,10 +24,16 @@ public class VariablePower implements Function {
 	}
 
 	public String toString() {
-		return "par" + parameterIndex + "^" + power;
+		if (name == null) {
+			return "par" + parameterIndex + "^" + power;
+		}
+		return name;
 	}
 
 	public String toLatex() {
-		return "p_{" + parameterIndex + "}^{" + power + "}";
+		if (name == null) {
+			return "p_{" + parameterIndex + "}^{" + power + "}";
+		}
+		return name;
 	}
 }

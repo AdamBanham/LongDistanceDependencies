@@ -17,10 +17,7 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function variablePower(int parameterIndex, int power) {
-		if (power == 1) {
-			return variable(parameterIndex);
-		}
-		return new VariablePower(parameterIndex, power);
+		return variablePower(parameterIndex, null, power);
 	}
 
 	public Function product(Function... functions) {
@@ -36,10 +33,21 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function variable(int parameterIndex) {
+		return variable(parameterIndex, null);
+	}
+
+	public Function variablePower(int parameterIndex, String name, int power) {
+		if (power == 1) {
+			return variable(parameterIndex, name);
+		}
+		return new VariablePower(parameterIndex, name, power);
+	}
+
+	public Function variable(int parameterIndex, String name) {
 		if (Arrays.contains(fixParameters, parameterIndex)) {
 			return constant(fixValue);
 		}
-		return new Variable(parameterIndex);
+		return new Variable(parameterIndex, name);
 	}
 
 }
