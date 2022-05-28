@@ -67,4 +67,14 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImpl extends StochasticL
 	public StochasticLabelledPetriNetSemantics getDefaultSemantics() {
 		return new StochasticLabelledPetriNetSemanticsAdjustmentWeightsImpl(this);
 	}
+
+	@Override
+	public double getTransitionBaseWeight(int transition) {
+		return transitionBaseWeights.get(transition);
+	}
+
+	@Override
+	public double getTransitionAdjustmentWeight(int transitionOn, int transitionHistory) {
+		return transitionAdjustmentFactors.get(transitionOn).get(transitionHistory);
+	}
 }

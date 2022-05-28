@@ -15,4 +15,8 @@ public interface StochasticLabelledPetriNetAdjustmentWeights extends StochasticL
 	 */
 	public double getTransitionWeight(int transition, int[] history);
 
+	public double getTransitionBaseWeight(int transition);
+
+	public double getTransitionAdjustmentWeight(int transitionOn, int transitionHistory);
+
 }
