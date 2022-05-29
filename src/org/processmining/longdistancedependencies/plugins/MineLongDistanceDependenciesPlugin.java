@@ -7,6 +7,7 @@ import org.apache.commons.math3.util.Pair;
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.directlyfollowsmodelminer.model.DirectlyFollowsModel;
@@ -28,6 +29,30 @@ import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFilteredImpl;
 import org.processmining.plugins.inductiveVisualMiner.plugins.InductiveVisualMinerAlignmentComputation;
 
 public class MineLongDistanceDependenciesPlugin {
+
+	@Plugin(name = "Mine long-distance dependencies (AN)", level = PluginLevel.Regular, returnLabels = {
+			"Stochastic labelled Petri net with long-distance dependencies" }, returnTypes = {
+					StochasticLabelledPetriNetAdjustmentWeights.class }, parameterLabels = { "Accepting Petri net",
+							"Log" }, userAccessible = true)
+	@UITopiaVariant(affiliation = IMMiningDialog.affiliation, author = IMMiningDialog.author, email = IMMiningDialog.email)
+	@PluginVariant(variantLabel = "Mine a Process Tree, dialog", requiredParameterLabels = { 0, 1 })
+	public StochasticLabelledPetriNetAdjustmentWeights mine(UIPluginContext context, AcceptingPetriNet model, XLog xLog)
+			throws Exception {
+		MiningDialog dialog = new MiningDialog(xLog);
+		InteractionResult result = context.showWizard("Mine long-distance dependencies", true, true, dialog);
+		context.log("Mining...");
+		if (result != InteractionResult.FINISHED) {
+			context.getFutureResult(0).cancel(false);
+			return null;
+		}
+
+		return mine(new IvMModel(model), xLog, dialog.getClassifier(), new ProMCanceller() {
+			public boolean isCancelled() {
+				return context.getProgress().isCancelled();
+			}
+		});
+	}
+
 	@Plugin(name = "Mine long-distance dependencies (DFM)", level = PluginLevel.Regular, returnLabels = {
 			"Stochastic labelled Petri net with long-distance dependencies" }, returnTypes = {
 					StochasticLabelledPetriNetAdjustmentWeights.class }, parameterLabels = { "Directly follows model",
@@ -51,7 +76,7 @@ public class MineLongDistanceDependenciesPlugin {
 		});
 	}
 
-	@Plugin(name = "Mine long-distance dependencies (ET)", level = PluginLevel.Regular, returnLabels = {
+	@Plugin(name = "Mine long-distance dependencies (PT)", level = PluginLevel.Regular, returnLabels = {
 			"Stochastic labelled Petri net with long-distance dependencies" }, returnTypes = {
 					StochasticLabelledPetriNetAdjustmentWeights.class }, parameterLabels = { "Efficient tree",
 							"Log" }, userAccessible = true)

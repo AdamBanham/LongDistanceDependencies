@@ -11,9 +11,11 @@ import java.util.concurrent.Executor;
 import org.apache.commons.math3.util.Pair;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
-import org.processmining.directlyfollowsmodelminer.mining.plugins.DfmImportPlugin;
+import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
+import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
+import org.processmining.framework.connections.ConnectionID;
 import org.processmining.framework.connections.ConnectionManager;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginContextID;
@@ -45,12 +47,16 @@ public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
 		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog3 300.xes.xes.gz");
 		File modelFile = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/Directly follows model of testlog2.dfm");
+				"/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog2.apnml");
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		//		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
 		//		//IvMModel model = new IvMModel(EfficientTreeImportPlugin.importFromFile(modelFile));
-		IvMModel model = new IvMModel(DfmImportPlugin.readFile(new FileInputStream(modelFile)));
+		//IvMModel model = new IvMModel(DfmImportPlugin.readFile(new FileInputStream(modelFile)));
+		AcceptingPetriNet aNet = AcceptingPetriNetFactory.createAcceptingPetriNet();
+		aNet.importFromStream(new FakeContext(), new FileInputStream(modelFile));
+		IvMModel model = new IvMModel(aNet);
+		
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
 
 		//		StochasticLabelledPetriNetAdjustmentWeights net = TestModel.generate();
@@ -154,8 +160,55 @@ public class LongDistancePlugin {
 		}
 
 		public ConnectionManager getConnectionManager() {
-			// TODO Auto-generated method stub
-			return null;
+			return new ConnectionManager() {
+				
+				public void setEnabled(boolean isEnabled) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public boolean isEnabled() {
+					// TODO Auto-generated method stub
+					return false;
+				}
+				
+				public <T extends Connection> T getFirstConnection(Class<T> connectionType, PluginContext context,
+						Object... objects) throws ConnectionCannotBeObtained {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				public <T extends Connection> Collection<T> getConnections(Class<T> connectionType, PluginContext context,
+						Object... objects) throws ConnectionCannotBeObtained {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				public org.processmining.framework.plugin.events.ConnectionObjectListener.ListenerList getConnectionListeners() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				public Collection<ConnectionID> getConnectionIDs() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				public Connection getConnection(ConnectionID id) throws ConnectionCannotBeObtained {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				
+				public void clear() {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				public <T extends Connection> T addConnection(T connection) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
 		}
 
 		public PluginContextID createNewPluginContextID() {
