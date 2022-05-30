@@ -1,5 +1,7 @@
 package org.processmining.longdistancedependencies.plugins;
 
+import java.text.DecimalFormat;
+
 import javax.swing.JComponent;
 
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
@@ -32,18 +34,31 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPlugin
 	}
 
 	public void decorateTransition(StochasticLabelledPetriNetAdjustmentWeights net, int transition, DotNode dotNode) {
-		StringBuilder label = new StringBuilder();
+		DecimalFormat f = new DecimalFormat("0.0000");
+		f.setMaximumFractionDigits(4);
+		f.setMinimumFractionDigits(0);
 
-		label.append(net.getTransitionBaseWeight(transition));
+		StringBuilder label = new StringBuilder();
+		label.append("<");
+
+		label.append(f.format(net.getTransitionBaseWeight(transition)));
 		for (int transitionHistory = 0; transitionHistory < net.getNumberOfTransitions(); transitionHistory++) {
-			label.append("*");
-			if (net.isTransitionSilent(transitionHistory)) {
-				label.append("tau^");
-			} else {
-				label.append(net.getTransitionLabel(transitionHistory));
+			double adjustmentFactor = net.getTransitionAdjustmentWeight(transition, transitionHistory);
+			if (adjustmentFactor != 1.0) {
+
+				label.append("*");
+
+				label.append(f.format(adjustmentFactor));
+				label.append("^");
+				if (net.isTransitionSilent(transitionHistory)) {
+					label.append("tau");
+				} else {
+					label.append(net.getTransitionLabel(transitionHistory));
+				}
 			}
-			label.append(net.getTransitionAdjustmentWeight(transition, transitionHistory));
 		}
+
+		label.append(">");
 
 		dotNode.setOption("xlabel", label.toString());
 	}

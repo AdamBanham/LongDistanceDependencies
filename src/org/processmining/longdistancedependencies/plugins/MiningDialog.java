@@ -69,6 +69,42 @@ public class MiningDialog extends JPanel {
 
 		gridy++;
 
+		//assumption
+		{
+			JLabel assumptionLabel = factory.createLabel("Assumption");
+			GridBagConstraints cAssumptionLabel = new GridBagConstraints();
+			cAssumptionLabel.gridx = 0;
+			cAssumptionLabel.gridy = gridy;
+			cAssumptionLabel.weightx = 0.4;
+			cAssumptionLabel.anchor = GridBagConstraints.NORTHWEST;
+			add(assumptionLabel, cAssumptionLabel);
+
+			{
+				JLabel assumptionValue = factory.createLabel(
+						"<html>This plug-in ignores the final markings of the accepting Petri net<br>and instead assumes that every deadlock is a final marking, <br>and that a deadlock is always reachable.</html>");
+				GridBagConstraints cAssumptionValue = new GridBagConstraints();
+				cAssumptionValue.gridx = 1;
+				cAssumptionValue.gridy = gridy;
+				cAssumptionValue.anchor = GridBagConstraints.NORTHWEST;
+				cAssumptionValue.weightx = 0.6;
+				add(assumptionValue, cAssumptionValue);
+			}
+		}
+
+		gridy++;
+
+		//spacer
+		{
+			JLabel spacer = factory.createLabel(" ");
+			GridBagConstraints cSpacer = new GridBagConstraints();
+			cSpacer.gridx = 0;
+			cSpacer.gridy = gridy;
+			cSpacer.anchor = GridBagConstraints.WEST;
+			add(spacer, cSpacer);
+		}
+
+		gridy++;
+
 		//doi
 		{
 			doiLabel = factory.createLabel("More information");
