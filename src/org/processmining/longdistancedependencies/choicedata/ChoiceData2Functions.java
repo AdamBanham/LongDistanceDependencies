@@ -102,7 +102,7 @@ public class ChoiceData2Functions {
 	 * @param data
 	 * @return
 	 */
-	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions) {
+	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model) {
 
 		Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
 
@@ -129,7 +129,7 @@ public class ChoiceData2Functions {
 		//pick an arbitrary transition and add all of its parameters
 		TIntList result = new TIntArrayList();
 		for (Set<Integer> component : components) {
-			int transition = component.iterator().next();
+			int transition = preferredTransitionToFix(component, model);
 			result.add(transition); //base weight
 			for (int i = 0; i < numberOfTransitions; i++) {
 				result.add((transition + 1) * numberOfTransitions + i);
@@ -137,6 +137,17 @@ public class ChoiceData2Functions {
 		}
 
 		return result.toArray();
+	}
+
+	public static int preferredTransitionToFix(Iterable<Integer> transitions, IvMModel model) {
+		//prefer to fix taus
+		for (int transition : transitions) {
+			if (model.isTau(transition)) {
+				return transition;
+			}
+		}
+
+		return transitions.iterator().next();
 	}
 
 	public static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions,
