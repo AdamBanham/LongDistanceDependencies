@@ -45,9 +45,8 @@ import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
 public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog3 300.xes.xes.gz");
-		File modelFile = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog2.apnml");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12-a.xes.gz");
+		File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12a-DFM-80.apnml");
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		//		//		model.importFromStream(new FakeContext(), new FileInputStream(modelFile));
@@ -56,7 +55,7 @@ public class LongDistancePlugin {
 		AcceptingPetriNet aNet = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		aNet.importFromStream(new FakeContext(), new FileInputStream(modelFile));
 		IvMModel model = new IvMModel(aNet);
-		
+
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
 
 		//		StochasticLabelledPetriNetAdjustmentWeights net = TestModel.generate();
@@ -161,49 +160,49 @@ public class LongDistancePlugin {
 
 		public ConnectionManager getConnectionManager() {
 			return new ConnectionManager() {
-				
+
 				public void setEnabled(boolean isEnabled) {
 					// TODO Auto-generated method stub
-					
+
 				}
-				
+
 				public boolean isEnabled() {
 					// TODO Auto-generated method stub
 					return false;
 				}
-				
+
 				public <T extends Connection> T getFirstConnection(Class<T> connectionType, PluginContext context,
 						Object... objects) throws ConnectionCannotBeObtained {
 					// TODO Auto-generated method stub
 					return null;
 				}
-				
-				public <T extends Connection> Collection<T> getConnections(Class<T> connectionType, PluginContext context,
-						Object... objects) throws ConnectionCannotBeObtained {
+
+				public <T extends Connection> Collection<T> getConnections(Class<T> connectionType,
+						PluginContext context, Object... objects) throws ConnectionCannotBeObtained {
 					// TODO Auto-generated method stub
 					return null;
 				}
-				
+
 				public org.processmining.framework.plugin.events.ConnectionObjectListener.ListenerList getConnectionListeners() {
 					// TODO Auto-generated method stub
 					return null;
 				}
-				
+
 				public Collection<ConnectionID> getConnectionIDs() {
 					// TODO Auto-generated method stub
 					return null;
 				}
-				
+
 				public Connection getConnection(ConnectionID id) throws ConnectionCannotBeObtained {
 					// TODO Auto-generated method stub
 					return null;
 				}
-				
+
 				public void clear() {
 					// TODO Auto-generated method stub
-					
+
 				}
-				
+
 				public <T extends Connection> T addConnection(T connection) {
 					// TODO Auto-generated method stub
 					return null;

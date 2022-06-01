@@ -51,7 +51,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPlugin
 				label.append(f.format(adjustmentFactor));
 				label.append("^");
 				if (net.isTransitionSilent(transitionHistory)) {
-					label.append("tau");
+					label.append("tau" + transitionHistory);
 				} else {
 					label.append(net.getTransitionLabel(transitionHistory));
 				}
