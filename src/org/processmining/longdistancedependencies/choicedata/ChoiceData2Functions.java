@@ -1,6 +1,7 @@
 package org.processmining.longdistancedependencies.choicedata;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
 
@@ -104,35 +105,82 @@ public class ChoiceData2Functions {
 	 */
 	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model) {
 
-		Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
+		//find groups of dependent transitions
+		List<Set<Integer>> groups;
+		{
+			Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
+			ChoiceIterator it = data.iterator();
+			while (it.hasNext()) {
+				it.next();
+				int[] executedNext = it.getExecutedNext();
 
-		ChoiceIterator it = data.iterator();
-		while (it.hasNext()) {
-			it.next();
-			int[] executedNext = it.getExecutedNext();
+				//the transitions from executedNext appear together and must be merged
+				int transitionIndex = FixedMultiset.next(executedNext, -1);
+				int transitionIndexT = FixedMultiset.next(executedNext, transitionIndex);
+				while (transitionIndexT >= 0) {
 
-			//the transitions from executedNext appear together and must be merged
-			int transitionIndex = FixedMultiset.next(executedNext, -1);
-			int transitionIndexT = FixedMultiset.next(executedNext, transitionIndex);
-			while (transitionIndexT >= 0) {
+					graph.addEdge((Integer) transitionIndex, (Integer) transitionIndexT, 1);
 
-				graph.addEdge((Integer) transitionIndex, (Integer) transitionIndexT, 1);
+					transitionIndex = transitionIndexT;
+					transitionIndexT = FixedMultiset.next(executedNext, transitionIndexT);
+				}
+			}
+			groups = ConnectedComponents2.compute(graph);
+			System.out.println("components " + groups);
+		}
 
-				transitionIndex = transitionIndexT;
-				transitionIndexT = FixedMultiset.next(executedNext, transitionIndexT);
+		/**
+		 * Strategy 1: pick an arbitrary transition and fix all of its
+		 * parameters.
+		 */
+		TIntList result = new TIntArrayList();
+		for (Set<Integer> component : groups) {
+			int transition = preferredTransitionToFix(component, model);
+			result.add(transition); //base weight
+			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+				//result.add((transition + 1) * numberOfTransitions + transitionT);
 			}
 		}
 
-		List<Set<Integer>> components = ConnectedComponents2.compute(graph);
-		System.out.println("components " + components);
+		/**
+		 * Strategy 2: find transitions that are mandatory and single for
+		 * transition.
+		 */
+		for (int transition = 0; transition < numberOfTransitions; transition++) {
 
-		//pick an arbitrary transition and add all of its parameters
-		TIntList result = new TIntArrayList();
-		for (Set<Integer> component : components) {
-			int transition = preferredTransitionToFix(component, model);
-			result.add(transition); //base weight
-			for (int i = 0; i < numberOfTransitions; i++) {
-				result.add((transition + 1) * numberOfTransitions + i);
+			BitSet removed = new BitSet(numberOfTransitions);
+
+			ChoiceIterator it = data.iterator();
+			while (it.hasNext()) {
+				int[] history = it.next();
+				int[] executedNext = it.getExecutedNext();
+
+				if (executedNext[transition] >= 1) {
+					//transition was part of the next-executed steps; process the history
+
+					for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+						if (history[transitionT] != 1) {
+							removed.set(transitionT);
+						}
+					}
+
+					if (removed.cardinality() == numberOfTransitions) {
+						break; //do not consider this transition further 
+					}
+				}
+			}
+
+			if (removed.cardinality() != numberOfTransitions) {
+				//There are transitions that are mandatory and single
+				int transitionT = removed.nextClearBit(0);
+				while (transitionT < numberOfTransitions) {
+
+					//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
+					result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+
+					transitionT = removed.nextClearBit(transitionT + 1);
+				}
 			}
 		}
 
