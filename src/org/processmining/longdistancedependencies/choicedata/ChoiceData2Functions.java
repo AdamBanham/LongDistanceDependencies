@@ -1,7 +1,6 @@
 package org.processmining.longdistancedependencies.choicedata;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
 
@@ -147,44 +146,37 @@ public class ChoiceData2Functions {
 		 * Strategy 2: find transitions that are mandatory and single for
 		 * transition.
 		 */
-		for (int transition = 0; transition < numberOfTransitions; transition++) {
-
-			BitSet removed = new BitSet(numberOfTransitions);
-
+		{
+			boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
 			ChoiceIterator it = data.iterator();
 			while (it.hasNext()) {
 				int[] history = it.next();
 				int[] executedNext = it.getExecutedNext();
 
-				if (executedNext[transition] >= 1) {
-					//transition was part of the next-executed steps; process the history
-
-					for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-						if (history[transitionT] != 1) {
-							removed.set(transitionT);
+				for (int transition = 0; transition < numberOfTransitions; transition++) {
+					if (executedNext[transition] >= 1) {
+						for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+							if (history[transitionT] != 1) {
+								removed[transition][transitionT] = true;
+							}
 						}
 					}
-
-					if (removed.cardinality() == numberOfTransitions) {
-						break; //do not consider this transition further 
-					}
 				}
+
 			}
 
-			if (removed.cardinality() != numberOfTransitions) {
-				//There are transitions that are mandatory and single
-				int transitionT = removed.nextClearBit(0);
-				while (transitionT < numberOfTransitions) {
-
-					//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
-					result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-
-					transitionT = removed.nextClearBit(transitionT + 1);
+			for (int transition = 0; transition < numberOfTransitions; transition++) {
+				for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+					if (!removed[transition][transitionT]) {
+						//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
+						result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+					}
 				}
 			}
 		}
 
 		return result.toArray();
+
 	}
 
 	public static int preferredTransitionToFix(Iterable<Integer> transitions, IvMModel model) {
