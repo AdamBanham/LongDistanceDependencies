@@ -8,6 +8,7 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optim
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -52,6 +53,18 @@ public class Solver {
 			}
 		};
 
+		ParameterValidator validator = new ParameterValidator() {
+			public RealVector validate(RealVector params) {
+				System.out.println("validate " + params);
+				for (int i = 0; i < params.getDimension(); i++) {
+					if (params.getEntry(i) < 0) {
+						params.setEntry(i, 0);
+					}
+				}
+				return params;
+			}
+		};
+
 		//initial guess: all weights are equal, and no adjustments
 		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
 		initialGuess.set(1);
@@ -69,6 +82,7 @@ public class Solver {
 				.start(initialGuess)//
 				.model(jfunction)//
 				.target(values)//
+				.parameterValidator(validator)//
 				.lazyEvaluation(false)//
 				.maxEvaluations(1000)//
 				.maxIterations(1000)//
