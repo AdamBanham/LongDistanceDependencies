@@ -16,7 +16,7 @@ import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdju
 @Plugin(name = "Stochastic labelled Petri net with adjustment weights", parameterLabels = {
 		"Filename" }, returnLabels = { "Stochastic labelled Petri net with adjustment weights" }, returnTypes = {
 				StochasticLabelledPetriNetAdjustmentWeights.class })
-@UIImportPlugin(description = "Stochastic labelled Petri net files", extensions = { "slpna" })
+@UIImportPlugin(description = "Stochastic labelled Petri net with adjustment weights files", extensions = { "slpna" })
 public class StochasticLabelledPetriNetAdjustmentWeightsImportPlugin extends AbstractImportPlugin {
 	public StochasticLabelledPetriNetAdjustmentWeights importFromStream(PluginContext context, InputStream input,
 			String filename, long fileSizeInBytes) throws Exception {
@@ -69,9 +69,11 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImportPlugin extends Abs
 					result.addTransitionPlaceArc(transition, place);
 				}
 			}
+		}
 
-			//adjustment weights
-			{
+		//adjustment weights
+		{
+			for (int transition = 0; transition < numberOfTransitions; transition++) {
 				for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
 					double adjustmentWeight = Double.valueOf(getNextLine(r));
 					result.setTransitionAdjustmentWeight(transition, transitionT, adjustmentWeight);

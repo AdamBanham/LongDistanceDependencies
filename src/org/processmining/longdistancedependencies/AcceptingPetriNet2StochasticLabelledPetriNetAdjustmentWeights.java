@@ -33,6 +33,7 @@ public class AcceptingPetriNet2StochasticLabelledPetriNetAdjustmentWeights {
 			result.addPlaceToInitialMarking(oldPlace2place.get(oldPlace), oldInitialMarking.occurrences(oldPlace));
 		}
 
+		TObjectIntMap<Transition> oldTransition2newTransition = new TObjectIntHashMap<>();
 		for (Transition oldTransition : oldNet.getTransitions()) {
 			int newTransition;
 			if (oldTransition.isInvisible()) {
@@ -40,7 +41,11 @@ public class AcceptingPetriNet2StochasticLabelledPetriNetAdjustmentWeights {
 			} else {
 				newTransition = result.addTransition(oldTransition.getLabel(), 0);
 			}
+			oldTransition2newTransition.put(oldTransition, newTransition);
+		}
 
+		for (Transition oldTransition : oldNet.getTransitions()) {
+			int newTransition = oldTransition2newTransition.get(oldTransition);
 			for (PetrinetEdge<? extends PetrinetNode, ? extends PetrinetNode> edge : oldNet.getInEdges(oldTransition)) {
 				Place oldSource = (Place) edge.getSource();
 				result.addPlaceTransitionArc(oldPlace2place.get(oldSource), newTransition);

@@ -26,6 +26,11 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImpl extends StochasticL
 	}
 
 	@Override
+	public int addTransition(double baseWeight) {
+		return super.addTransition(baseWeight);
+	}
+
+	@Override
 	public int addTransition(String label, double baseWeight) {
 		super.addTransition(label, baseWeight);
 		transitionBaseWeights.add(baseWeight);

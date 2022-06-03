@@ -48,17 +48,22 @@ public class StochasticLabelledPetriNetAdjustmentWeightsExportPlugin {
 
 				w.println("# number of input places");
 				w.println(net.getInputPlaces(transition).length);
+				w.println("# input places");
 				for (int place : net.getInputPlaces(transition)) {
 					w.println(place);
 				}
 
 				w.println("# number of output places");
 				w.println(net.getOutputPlaces(transition).length);
+				w.println("# output places");
 				for (int place : net.getOutputPlaces(transition)) {
 					w.println(place);
 				}
+			}
 
-				w.println("# adjustment weights");
+			w.println("# adjustment weights");
+			for (int transition = 0; transition < net.getNumberOfTransitions(); transition++) {
+				w.println("# transition " + transition);
 				for (int transitionT = 0; transitionT < net.getNumberOfTransitions(); transitionT++) {
 					w.println(net.getTransitionAdjustmentWeight(transition, transitionT));
 				}
