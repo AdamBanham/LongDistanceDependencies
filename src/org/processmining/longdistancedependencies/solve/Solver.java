@@ -16,8 +16,6 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.function.Function;
 
-import cern.colt.Arrays;
-
 public class Solver {
 
 	//other solvers:
@@ -45,9 +43,9 @@ public class Solver {
 					}
 				}
 
-				System.out.println();
-				System.out.println("point " + point);
-				System.out.println("value " + value);
+				//				System.out.println();
+				//				System.out.println("point " + point);
+				//				System.out.println("value " + value);
 				//System.out.println("jacobian " + jacobian);
 				return new Pair<RealVector, RealMatrix>(value, jacobian);
 			}
@@ -55,7 +53,7 @@ public class Solver {
 
 		ParameterValidator validator = new ParameterValidator() {
 			public RealVector validate(RealVector params) {
-				System.out.println("validate " + params);
+				//				System.out.println("validate " + params);
 				for (int i = 0; i < params.getDimension(); i++) {
 					if (params.getEntry(i) < 0) {
 						params.setEntry(i, 0);
@@ -73,8 +71,8 @@ public class Solver {
 		}
 		//initialGuess.setEntry(13, 2);
 
-		System.out.println("Initial guess: " + initialGuess);
-		System.out.println("target " + Arrays.toString(values));
+		//		System.out.println("Initial guess: " + initialGuess);
+		//		System.out.println("target " + Arrays.toString(values));
 		//		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
 		//		initialGuess.set(2);
 
@@ -92,9 +90,9 @@ public class Solver {
 		//LeastSquaresOptimizer optimiser = new GaussNewtonOptimizer(GaussNewtonOptimizer.Decomposition.CHOLESKY);
 		Optimum optimum = optimiser.optimize(problem);
 
-		System.out.println("RMS: " + optimum.getRMS());
-		System.out.println("evaluations: " + optimum.getEvaluations());
-		System.out.println("iterations: " + optimum.getIterations());
+//		System.out.println("RMS: " + optimum.getRMS());
+//		System.out.println("evaluations: " + optimum.getEvaluations());
+//		System.out.println("iterations: " + optimum.getIterations());
 
 		return optimum.getPoint().toArray();
 	}

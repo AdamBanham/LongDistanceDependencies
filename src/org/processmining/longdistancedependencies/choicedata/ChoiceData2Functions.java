@@ -132,21 +132,20 @@ public class ChoiceData2Functions {
 			groups = ConnectedComponents2.compute(graph);
 			System.out.println("components " + groups);
 		}
-		
+
 		TIntList result = new TIntArrayList();
 
 		/**
 		 * Strategy 1: pick an arbitrary transition and fix all of its
 		 * parameters.
 		 */
-		//		for (Set<Integer> component : groups) {
-		//			int transition = preferredTransitionToFix(component, model);
-		//			result.add(transition); //base weight
-		//			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-		//				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-		//				//result.add((transition + 1) * numberOfTransitions + transitionT);
-		//			}
-		//		}
+		for (Set<Integer> component : groups) {
+			int transition = preferredTransitionToFix(component, model);
+			result.add(getParameterIndexBase(transition)); //base weight
+			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions)); //adjustment weight
+			}
+		}
 
 		//		/**
 		//		 * Strategy 2: find transitions that are mandatory and single for
