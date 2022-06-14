@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
+import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.longdistancedependencies.FixedMultiset;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIterator;
 import org.processmining.longdistancedependencies.function.Function;
@@ -17,6 +18,7 @@ import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
+import lpsolve.LpSolveException;
 
 /**
  * Parameters:
@@ -100,9 +102,12 @@ public class ChoiceData2Functions {
 	 * This assumes that the base weight parameters are numbered 0..n-1.
 	 * 
 	 * @param data
+	 * @param canceller
 	 * @return
+	 * @throws LpSolveException
 	 */
-	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model) {
+	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model,
+			ProMCanceller canceller) throws LpSolveException {
 
 		//find groups of dependent transitions
 		List<Set<Integer>> groups;
@@ -127,53 +132,56 @@ public class ChoiceData2Functions {
 			groups = ConnectedComponents2.compute(graph);
 			System.out.println("components " + groups);
 		}
+		
+		TIntList result = new TIntArrayList();
 
 		/**
 		 * Strategy 1: pick an arbitrary transition and fix all of its
 		 * parameters.
 		 */
-		TIntList result = new TIntArrayList();
-		for (Set<Integer> component : groups) {
-			int transition = preferredTransitionToFix(component, model);
-			result.add(transition); //base weight
-			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-				//result.add((transition + 1) * numberOfTransitions + transitionT);
-			}
-		}
+		//		for (Set<Integer> component : groups) {
+		//			int transition = preferredTransitionToFix(component, model);
+		//			result.add(transition); //base weight
+		//			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+		//				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+		//				//result.add((transition + 1) * numberOfTransitions + transitionT);
+		//			}
+		//		}
 
-		/**
-		 * Strategy 2: find transitions that are mandatory and single for
-		 * transition.
-		 */
-		{
-			boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
-			ChoiceIterator it = data.iterator();
-			while (it.hasNext()) {
-				int[] history = it.next();
-				int[] executedNext = it.getExecutedNext();
+		//		/**
+		//		 * Strategy 2: find transitions that are mandatory and single for
+		//		 * transition.
+		//		 */
+		//		{
+		//			boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
+		//			ChoiceIterator it = data.iterator();
+		//			while (it.hasNext()) {
+		//				int[] history = it.next();
+		//				int[] executedNext = it.getExecutedNext();
+		//
+		//				for (int transition = 0; transition < numberOfTransitions; transition++) {
+		//					if (executedNext[transition] >= 1) {
+		//						for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+		//							if (history[transitionT] != 1) {
+		//								removed[transition][transitionT] = true;
+		//							}
+		//						}
+		//					}
+		//				}
+		//
+		//			}
+		//
+		//			for (int transition = 0; transition < numberOfTransitions; transition++) {
+		//				for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+		//					if (!removed[transition][transitionT]) {
+		//						//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
+		//						result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+		//					}
+		//				}
+		//			}
+		//		}
 
-				for (int transition = 0; transition < numberOfTransitions; transition++) {
-					if (executedNext[transition] >= 1) {
-						for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-							if (history[transitionT] != 1) {
-								removed[transition][transitionT] = true;
-							}
-						}
-					}
-				}
-
-			}
-
-			for (int transition = 0; transition < numberOfTransitions; transition++) {
-				for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-					if (!removed[transition][transitionT]) {
-						//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
-						result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-					}
-				}
-			}
-		}
+		result.addAll(FixParametersSequentialXor.getParametersToFix(model, data, canceller));
 
 		return result.toArray();
 

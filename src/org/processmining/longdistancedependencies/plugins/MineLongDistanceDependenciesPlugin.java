@@ -120,7 +120,7 @@ public class MineLongDistanceDependenciesPlugin {
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
 		System.out.println(choiceData);
 
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model);
+		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model, canceller);
 		System.out.println("fixed parameters " + Arrays.toString(parametersToFix));
 
 		//to functions
