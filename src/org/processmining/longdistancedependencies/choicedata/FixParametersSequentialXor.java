@@ -146,18 +146,33 @@ public class FixParametersSequentialXor {
 		{
 			for (int candidateIndexA = 0; candidateIndexA < candidates.length; candidateIndexA++) {
 
-				int[] columns = new int[candidates.length + 1];
-				double[] weights = new double[candidates.length + 1];
+				//ensure that the fixed parameters selected in earlier steps do not clash
+				int transitionB = candidates[candidateIndexA];
+				int parameterIndex = ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
+						model.getMaxNumberOfNodes());
+				if (result.contains(parameterIndex)) {
+					//If the adjustment parameter is already fixed, then the solver should treat it as such.
+					int[] columns = new int[1];
+					double[] weights = new double[1];
+					columns[0] = getParameterFix(candidates, candidateIndexA);
+					weights[0] = 1;
 
-				for (int set = 0; set < candidates.length; set++) {
-					columns[set] = getParameterInSet(candidates, candidateIndexA, set);
-					weights[set] = -1;
+					solver.addConstraintex(columns.length, weights, columns, LpSolve.EQ, 1);
+				} else {
+					//If the adjustment parameter is not fixed yet, the transition must be part of a set.
+					int[] columns = new int[candidates.length + 1];
+					double[] weights = new double[candidates.length + 1];
+
+					for (int set = 0; set < candidates.length; set++) {
+						columns[set] = getParameterInSet(candidates, candidateIndexA, set);
+						weights[set] = -1;
+					}
+
+					columns[columns.length - 1] = getParameterFix(candidates, candidateIndexA);
+					weights[weights.length - 1] = 1;
+
+					solver.addConstraintex(columns.length, weights, columns, LpSolve.LE, 0);
 				}
-
-				columns[columns.length - 1] = getParameterFix(candidates, candidateIndexA);
-				weights[weights.length - 1] = 1;
-
-				solver.addConstraintex(columns.length, weights, columns, LpSolve.LE, 0);
 			}
 		}
 

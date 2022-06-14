@@ -45,11 +45,11 @@ import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
 public class LongDistancePlugin {
 	public static void main(String[] args) throws FileNotFoundException, Exception {
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12-a.xes.gz");
-		File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12a-DFM-80.apnml");
+		//File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12-a.xes.gz");
+		//File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12a-DFM-80.apnml");
 
-		//File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog3 300.xes.xes.gz");
-		//File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog3.apnml");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog3 300.xes.xes.gz");
+		File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog3.apnml");
 
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
