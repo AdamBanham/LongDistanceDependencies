@@ -107,7 +107,7 @@ public class ChoiceData2Functions {
 	 * @throws LpSolveException
 	 */
 	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model,
-			ProMCanceller canceller) throws LpSolveException {
+			boolean assumeLogIsComplete, ProMCanceller canceller) throws LpSolveException {
 
 		//find groups of dependent transitions
 		List<Set<Integer>> groups;
@@ -180,7 +180,9 @@ public class ChoiceData2Functions {
 		//			}
 		//		}
 
-		result.addAll(FixParametersSequentialXor.getParametersToFix(model, data, canceller));
+		if (assumeLogIsComplete) {
+			result.addAll(FixParametersSequentialXor.getParametersToFix(model, data, canceller));
+		}
 
 		return result.toArray();
 

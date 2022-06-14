@@ -49,7 +49,8 @@ public class LongDistancePlugin {
 		//File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12a-DFM-80.apnml");
 
 		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/testlog3 300.xes.xes.gz");
-		File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog3.apnml");
+		File modelFile = new File(
+				"/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of testlog3.apnml");
 
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
@@ -89,7 +90,8 @@ public class LongDistancePlugin {
 		System.out.println(choiceData);
 
 		//find fixed parameters
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model, canceller);
+		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model,
+				false, canceller);
 		System.out.println("fixing parameters " + Arrays.toString(parametersToFix));
 
 		//to functions

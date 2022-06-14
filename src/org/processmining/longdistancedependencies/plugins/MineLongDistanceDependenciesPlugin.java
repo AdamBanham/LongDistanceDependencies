@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
-import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.contexts.uitopia.UIPluginContext;
@@ -15,6 +14,7 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.longdistancedependencies.AcceptingPetriNet2StochasticLabelledPetriNetAdjustmentWeights;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
 import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdjustmentWeights;
 import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdjustmentWeightsEditable;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
@@ -46,7 +46,7 @@ public class MineLongDistanceDependenciesPlugin {
 			return null;
 		}
 
-		StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet = mine(model, xLog, dialog.getClassifier(),
+		StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet = mine(model, xLog, dialog.getParameters(),
 				new ProMCanceller() {
 					public boolean isCancelled() {
 						return context.getProgress().isCancelled();
@@ -103,24 +103,25 @@ public class MineLongDistanceDependenciesPlugin {
 	//	}
 
 	public static StochasticLabelledPetriNetAdjustmentWeightsEditable mine(AcceptingPetriNet model, XLog xLog,
-			XEventClassifier classifier, ProMCanceller canceller) throws Exception {
+			LongDistanceDependenciesParameters parameters, ProMCanceller canceller) throws Exception {
 		StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet = AcceptingPetriNet2StochasticLabelledPetriNetAdjustmentWeights
 				.convert(model.getNet(), model.getInitialMarking());
-		mine(new IvMModel(model), xLog, classifier, resultNet, canceller);
+		mine(new IvMModel(model), xLog, parameters, resultNet, canceller);
 		return resultNet;
 	}
 
-	public static void mine(IvMModel model, XLog xLog, XEventClassifier classifier,
+	public static void mine(IvMModel model, XLog xLog, LongDistanceDependenciesParameters parameters,
 			StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet, ProMCanceller canceller) throws Exception {
 
 		IvMLogFiltered ivmLog = new IvMLogFilteredImpl(
-				InductiveVisualMinerAlignmentComputation.align(model, xLog, classifier, canceller));
+				InductiveVisualMinerAlignmentComputation.align(model, xLog, parameters.getClassifier(), canceller));
 
 		//create choice data
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
 		System.out.println(choiceData);
 
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model, canceller);
+		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model,
+				parameters.isAssumeLogIsComplete(), canceller);
 		System.out.println("fixed parameters " + Arrays.toString(parametersToFix));
 
 		//to functions

@@ -3,17 +3,22 @@ package org.processmining.longdistancedependencies.plugins;
 import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParametersAbstract;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParametersDefault;
 import org.processmining.plugins.InductiveMiner.ClassifierChooser;
 
 import com.fluxicon.slickerbox.factory.SlickerFactory;
@@ -25,6 +30,8 @@ public class MiningDialog extends JPanel {
 	private final JLabel doiValue;
 	private final ClassifierChooser classifiers;
 	private final String doi = "TODO: doi";
+
+	private final LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
 
 	public MiningDialog(XLog log) {
 		SlickerFactory factory = SlickerFactory.instance();
@@ -53,6 +60,69 @@ public class MiningDialog extends JPanel {
 			cClassifiers.fill = GridBagConstraints.HORIZONTAL;
 			cClassifiers.weightx = 0.6;
 			add(classifiers, cClassifiers);
+
+			parameters.setClassifier(classifiers.getSelectedClassifier());
+
+			classifiers.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					parameters.setClassifier(classifiers.getSelectedClassifier());
+				}
+			});
+		}
+
+		gridy++;
+
+		//spacer
+		{
+			JLabel spacer = factory.createLabel(" ");
+			GridBagConstraints cSpacer = new GridBagConstraints();
+			cSpacer.gridx = 0;
+			cSpacer.gridy = gridy;
+			cSpacer.anchor = GridBagConstraints.WEST;
+			add(spacer, cSpacer);
+		}
+
+		gridy++;
+
+		//log assumption
+		{
+			final JLabel logAssumptionLabel = factory.createLabel("Log assumption");
+			GridBagConstraints cClassifierLabel = new GridBagConstraints();
+			cClassifierLabel.gridx = 0;
+			cClassifierLabel.gridy = gridy;
+			cClassifierLabel.weightx = 0.4;
+			cClassifierLabel.anchor = GridBagConstraints.NORTHWEST;
+			add(logAssumptionLabel, cClassifierLabel);
+
+			final JCheckBox logAssumption = factory.createCheckBox(
+					"Assume that the log is eventually follows complete with respect to the model.",
+					parameters.isAssumeLogIsComplete());
+			GridBagConstraints cLog = new GridBagConstraints();
+			cLog.gridx = 1;
+			cLog.gridy = gridy;
+			cLog.anchor = GridBagConstraints.NORTHWEST;
+			cLog.fill = GridBagConstraints.HORIZONTAL;
+			cLog.weightx = 0.6;
+			add(logAssumption, cLog);
+
+			logAssumption.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					parameters.setLogAssumption(logAssumption.isSelected());
+				}
+			});
+		}
+
+		gridy++;
+
+		{
+			JLabel assumptionValue = factory.createLabel(
+					"<html>This will apply further reduction techniques.<br>This will take longer, but might make the model simpler by a reduction of parameters.</html>");
+			GridBagConstraints cAssumptionValue = new GridBagConstraints();
+			cAssumptionValue.gridx = 1;
+			cAssumptionValue.gridy = gridy;
+			cAssumptionValue.anchor = GridBagConstraints.NORTHWEST;
+			cAssumptionValue.weightx = 0.6;
+			add(assumptionValue, cAssumptionValue);
 		}
 
 		gridy++;
@@ -137,8 +207,8 @@ public class MiningDialog extends JPanel {
 		doiValue.setText(doi);
 	}
 
-	public XEventClassifier getClassifier() {
-		return classifiers.getSelectedClassifier();
+	public LongDistanceDependenciesParameters getParameters() {
+		return parameters;
 	}
 
 	public static void openWebPage(String url) {
