@@ -182,6 +182,8 @@ public class ChoiceData2Functions {
 
 		if (assumeLogIsComplete) {
 			result.addAll(FixParametersSequentialXor.getParametersToFix(model, data, canceller));
+		} else {
+			
 		}
 
 		return result.toArray();

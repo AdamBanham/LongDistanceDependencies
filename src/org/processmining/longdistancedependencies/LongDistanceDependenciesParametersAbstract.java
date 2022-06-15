@@ -6,10 +6,12 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 
 	private XEventClassifier classifier;
 	private boolean assumeLog;
+	private boolean debug;
 
-	public LongDistanceDependenciesParametersAbstract(XEventClassifier classifier, boolean assumeLog) {
+	public LongDistanceDependenciesParametersAbstract(XEventClassifier classifier, boolean assumeLog, boolean debug) {
 		this.classifier = classifier;
 		this.assumeLog = assumeLog;
+		this.debug = debug;
 	}
 
 	public XEventClassifier getClassifier() {
@@ -26,6 +28,14 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 
 	public void setLogAssumption(boolean assumeLog) {
 		this.assumeLog = assumeLog;
+	}
+
+	public boolean isDebug() {
+		return debug;
+	}
+
+	public void setDebug(boolean debug) {
+		this.debug = debug;
 	}
 
 }

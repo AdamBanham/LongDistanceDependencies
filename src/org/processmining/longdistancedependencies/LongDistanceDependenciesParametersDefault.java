@@ -4,9 +4,10 @@ import org.processmining.directlyfollowsmodelminer.mining.variants.DFMMiningPara
 
 public class LongDistanceDependenciesParametersDefault extends LongDistanceDependenciesParametersAbstract {
 
-	private final static boolean assumeLogDefault = false;
+	public final static boolean assumeLogDefault = false;
+	public final static boolean debugDefault = false;
 
 	public LongDistanceDependenciesParametersDefault() {
-		super(DFMMiningParametersDefault.defaultClassifier, assumeLogDefault);
+		super(DFMMiningParametersDefault.defaultClassifier, assumeLogDefault, debugDefault);
 	}
 }

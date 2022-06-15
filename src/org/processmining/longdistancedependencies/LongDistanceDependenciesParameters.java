@@ -8,4 +8,6 @@ public interface LongDistanceDependenciesParameters {
 
 	public boolean isAssumeLogIsComplete();
 
+	public boolean isDebug();
+
 }

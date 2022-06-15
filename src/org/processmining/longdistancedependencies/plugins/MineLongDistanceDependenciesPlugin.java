@@ -113,16 +113,19 @@ public class MineLongDistanceDependenciesPlugin {
 	public static void mine(IvMModel model, XLog xLog, LongDistanceDependenciesParameters parameters,
 			StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet, ProMCanceller canceller) throws Exception {
 
+		debug(parameters, "align log");
 		IvMLogFiltered ivmLog = new IvMLogFilteredImpl(
 				InductiveVisualMinerAlignmentComputation.align(model, xLog, parameters.getClassifier(), canceller));
 
 		//create choice data
+		debug(parameters, "create choice data");
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
-		System.out.println(choiceData);
+		//debug(parameters, choiceData);
 
+		debug(parameters, "determine parameters to fix");
 		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model,
 				parameters.isAssumeLogIsComplete(), canceller);
-		System.out.println("fixed parameters " + Arrays.toString(parametersToFix));
+		//debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
 
 		//to functions
 		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
@@ -137,14 +140,14 @@ public class MineLongDistanceDependenciesPlugin {
 		}
 
 		//solve
+		debug(parameters, "solve dependencies");
 		double[] result = Solver.solve(values, equations.getSecond(),
 				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes(), parametersToFix,
 				ChoiceData2Functions.fixValue);
 
-		System.out.println();
-		System.out.println("result:");
-		System.out.println(Arrays.toString(result));
-		System.out.println(toString(result, model));
+		debug(parameters, "result:");
+		debug(parameters, Arrays.toString(result));
+		debug(parameters, toString(result, model));
 
 		applyToNet(result, resultNet, model);
 	}
@@ -190,5 +193,11 @@ public class MineLongDistanceDependenciesPlugin {
 		}
 
 		return result.toString();
+	}
+
+	public static void debug(LongDistanceDependenciesParameters parameters, Object object) {
+		if (parameters.isDebug()) {
+			System.out.println(object.toString());
+		}
 	}
 }
