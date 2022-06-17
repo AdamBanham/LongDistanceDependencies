@@ -7,21 +7,17 @@ import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIt
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
 import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 public class FixParametersSequentialXor {
 
-	public static int[] getParametersToFix(IvMModel model, ChoiceData choiceData, ProMCanceller canceller)
-			throws LpSolveException {
-		TIntArrayList result = new TIntArrayList();
+	public static void getParametersToFix(IvMModel model, ChoiceData choiceData, ProMCanceller canceller,
+			TIntList result) throws LpSolveException {
 		for (int transitionA = 0; transitionA < model.getMaxNumberOfNodes(); transitionA++) {
 			System.out.println("transition " + transitionA);
 			getParametersToFixForTransition(model, transitionA, result, choiceData, canceller);
 		}
-
-		return result.toArray();
 	}
 
 	public static int getNumberOfInSetVariables(int[] candidates) {

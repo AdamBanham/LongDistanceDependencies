@@ -147,43 +147,43 @@ public class ChoiceData2Functions {
 			}
 		}
 
-		//		/**
-		//		 * Strategy 2: find transitions that are mandatory and single for
-		//		 * transition.
-		//		 */
-		//		{
-		//			boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
-		//			ChoiceIterator it = data.iterator();
-		//			while (it.hasNext()) {
-		//				int[] history = it.next();
-		//				int[] executedNext = it.getExecutedNext();
-		//
-		//				for (int transition = 0; transition < numberOfTransitions; transition++) {
-		//					if (executedNext[transition] >= 1) {
-		//						for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-		//							if (history[transitionT] != 1) {
-		//								removed[transition][transitionT] = true;
-		//							}
-		//						}
-		//					}
-		//				}
-		//
-		//			}
-		//
-		//			for (int transition = 0; transition < numberOfTransitions; transition++) {
-		//				for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-		//					if (!removed[transition][transitionT]) {
-		//						//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
-		//						result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-		//					}
-		//				}
-		//			}
-		//		}
-
 		if (assumeLogIsComplete) {
-			result.addAll(FixParametersSequentialXor.getParametersToFix(model, data, canceller));
+			/**
+			 * Strategy 2: find transitions that are mandatory and single for
+			 * transition.
+			 */
+			{
+				boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
+				ChoiceIterator it = data.iterator();
+				while (it.hasNext()) {
+					int[] history = it.next();
+					int[] executedNext = it.getExecutedNext();
+
+					for (int transition = 0; transition < numberOfTransitions; transition++) {
+						if (executedNext[transition] >= 1) {
+							for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+								if (history[transitionT] != 1) {
+									removed[transition][transitionT] = true;
+								}
+							}
+						}
+					}
+
+				}
+
+				for (int transition = 0; transition < numberOfTransitions; transition++) {
+					for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+						if (!removed[transition][transitionT]) {
+							//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
+							result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
+						}
+					}
+				}
+			}
+
+			FixParametersSequentialXor.getParametersToFix(model, data, canceller, result);
 		} else {
-			
+
 		}
 
 		return result.toArray();
