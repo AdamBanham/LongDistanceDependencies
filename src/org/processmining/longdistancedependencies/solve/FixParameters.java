@@ -1,5 +1,6 @@
 package org.processmining.longdistancedependencies.solve;
 
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -41,10 +42,30 @@ public class FixParameters {
 		 * Strategy 2: pick an arbitrary transition from the group and fix all
 		 * of its parameters.
 		 */
-		int transition = preferredTransitionToFix(group, model);
-		result.add(ChoiceData2Functions.getParameterIndexBase(transition)); //base weight
-		for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-			result.add(ChoiceData2Functions.getParameterIndexAdjustment(transition, transitionT, numberOfTransitions)); //adjustment weight
+		{
+			int transition = preferredTransitionToFix(group, model);
+			result.add(ChoiceData2Functions.getParameterIndexBase(transition)); //base weight
+			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
+				result.add(
+						ChoiceData2Functions.getParameterIndexAdjustment(transition, transitionT, numberOfTransitions)); //adjustment weight
+			}
+		}
+
+		/**
+		 * Strategy 3: fix mandatory dependencies.
+		 */
+		for (int transitionA : group) {
+			BitSet mandatory = Mandatory.getMandatory(model, data, transitionA);
+
+			for (int transitionB = mandatory.nextSetBit(0); transitionB >= 0; transitionB = mandatory
+					.nextSetBit(transitionB + 1)) {
+				result.add(ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
+						numberOfTransitions)); //adjustment weight
+
+				if (transitionB == Integer.MAX_VALUE) {
+					break;
+				}
+			}
 		}
 
 		//		if (assumeLogIsComplete) {
@@ -87,6 +108,7 @@ public class FixParameters {
 		//		}
 
 		return result.toArray();
+
 	}
 
 	public static int preferredTransitionToFix(Set<Integer> group, IvMModel model) {

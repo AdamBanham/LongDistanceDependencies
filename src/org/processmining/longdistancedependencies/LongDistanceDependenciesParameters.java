@@ -10,4 +10,6 @@ public interface LongDistanceDependenciesParameters {
 
 	public boolean isDebug();
 
+	public int getNumberOfThreads();
+
 }

@@ -24,6 +24,10 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function product(Function... functions) {
+		if (functions.length == 1) {
+			return functions[0];
+		}
+		
 		List<Function> constants = new ArrayList<>();
 		List<Function> B = new ArrayList<>();
 		for (Function function : functions) {
@@ -62,6 +66,10 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function sum(Function... functions) {
+		if (functions.length == 1) {
+			return functions[0];
+		}
+		
 		List<Function> constants = new ArrayList<>();
 		List<Function> B = new ArrayList<>();
 		for (Function function : functions) {

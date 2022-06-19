@@ -3,6 +3,8 @@ package org.processmining.longdistancedependencies.plugins;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.math3.util.Pair;
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
@@ -30,6 +32,8 @@ import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFiltered;
 import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFilteredImpl;
 import org.processmining.plugins.inductiveVisualMiner.plugins.InductiveVisualMinerAlignmentComputation;
+
+import lpsolve.LpSolveException;
 
 public class MineLongDistanceDependenciesPlugin {
 
@@ -127,35 +131,41 @@ public class MineLongDistanceDependenciesPlugin {
 
 		int numberOfParameters = (1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes();
 		double[] result = new double[numberOfParameters];
+		Arrays.fill(result, 1);
 
 		//find groups
 		List<Set<Integer>> groups = Groups.getGroups(choiceData);
 		debug(parameters, "groups " + groups);
 
-		for (Set<Integer> group : groups) {
-			debug(parameters, "group " + group);
+		Thread[] threads = new Thread[Math.max(parameters.getNumberOfThreads(), groups.size())];
+		AtomicInteger nextGroupIndex = new AtomicInteger(0);
+		AtomicReference<LpSolveException> error = new AtomicReference<>(null);
+		for (int t = 0; t < threads.length; t++) {
+			threads[t] = new Thread(new Runnable() {
+				public void run() {
 
-			//fix parameters
-			int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
-			debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
+					int groupIndex = nextGroupIndex.getAndIncrement();
 
-			//to functions
-			Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
-					model.getMaxNumberOfNodes(), parametersToFix, model);
+					if (groupIndex >= groups.size() || error.get() != null) {
+						return;
+					}
 
-			//create target values
-			double[] values = new double[equations.getFirst().size()];
-			int i = 0;
-			for (Function function : equations.getFirst()) {
-				values[i] = function.getValue(null);
-				i++;
-			}
+					Set<Integer> group = groups.get(groupIndex);
+					try {
+						solveGroup(model, parameters, canceller, choiceData, numberOfParameters, result, group);
+					} catch (LpSolveException e) {
+						error.set(e);
+					}
+				}
+			}, "group solving thread " + t);
+		}
 
-			//solve
-			debug(parameters, "solve");
-			double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
+		for (Thread thread : threads) {
+			thread.join();
+		}
 
-			Groups.copyResultsForGroup(model, groupResult, result, group);
+		if (error.get() != null) {
+			throw error.get();
 		}
 
 		debug(parameters, "result:");
@@ -163,6 +173,35 @@ public class MineLongDistanceDependenciesPlugin {
 		debug(parameters, toString(result, model));
 
 		applyToNet(result, resultNet, model);
+	}
+
+	private static void solveGroup(IvMModel model, LongDistanceDependenciesParameters parameters,
+			ProMCanceller canceller, ChoiceData choiceData, int numberOfParameters, double[] result, Set<Integer> group)
+			throws LpSolveException {
+		debug(parameters, "group " + group);
+
+		//fix parameters
+		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
+		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
+
+		//to functions
+		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
+				model.getMaxNumberOfNodes(), parametersToFix, model);
+		//			debug(parameters, equations);
+
+		//create target values
+		double[] values = new double[equations.getFirst().size()];
+		int i = 0;
+		for (Function function : equations.getFirst()) {
+			values[i] = function.getValue(null);
+			i++;
+		}
+
+		//solve
+		debug(parameters, "solve");
+		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
+
+		Groups.copyResultsForGroup(model, groupResult, result, group);
 	}
 
 	public static void applyToNet(double[] parameters, StochasticLabelledPetriNetAdjustmentWeightsEditable resultNet,

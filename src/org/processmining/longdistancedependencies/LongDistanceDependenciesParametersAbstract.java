@@ -7,11 +7,14 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 	private XEventClassifier classifier;
 	private boolean assumeLog;
 	private boolean debug;
+	private int numberofthreads;
 
-	public LongDistanceDependenciesParametersAbstract(XEventClassifier classifier, boolean assumeLog, boolean debug) {
+	public LongDistanceDependenciesParametersAbstract(XEventClassifier classifier, boolean assumeLog, boolean debug,
+			int numberofthreads) {
 		this.classifier = classifier;
 		this.assumeLog = assumeLog;
 		this.debug = debug;
+		this.numberofthreads = numberofthreads;
 	}
 
 	public XEventClassifier getClassifier() {
@@ -36,6 +39,14 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 
 	public void setDebug(boolean debug) {
 		this.debug = debug;
+	}
+
+	public int getNumberOfThreads() {
+		return numberofthreads;
+	}
+
+	public void setNumberOfThreads(int numberofthreads) {
+		this.numberofthreads = numberofthreads;
 	}
 
 }
