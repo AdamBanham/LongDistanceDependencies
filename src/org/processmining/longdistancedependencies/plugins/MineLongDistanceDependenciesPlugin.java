@@ -144,20 +144,23 @@ public class MineLongDistanceDependenciesPlugin {
 			threads[t] = new Thread(new Runnable() {
 				public void run() {
 
-					int groupIndex = nextGroupIndex.getAndIncrement();
+					while (true) {
+						int groupIndex = nextGroupIndex.getAndIncrement();
 
-					if (groupIndex >= groups.size() || error.get() != null) {
-						return;
-					}
+						if (groupIndex >= groups.size() || error.get() != null) {
+							return;
+						}
 
-					Set<Integer> group = groups.get(groupIndex);
-					try {
-						solveGroup(model, parameters, canceller, choiceData, numberOfParameters, result, group);
-					} catch (LpSolveException e) {
-						error.set(e);
+						Set<Integer> group = groups.get(groupIndex);
+						try {
+							solveGroup(model, parameters, canceller, choiceData, numberOfParameters, result, group);
+						} catch (LpSolveException e) {
+							error.set(e);
+						}
 					}
 				}
 			}, "group solving thread " + t);
+			threads[t].start();
 		}
 
 		for (Thread thread : threads) {
@@ -182,7 +185,7 @@ public class MineLongDistanceDependenciesPlugin {
 
 		//fix parameters
 		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
-		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
+		//		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
 
 		//to functions
 		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
@@ -198,8 +201,10 @@ public class MineLongDistanceDependenciesPlugin {
 		}
 
 		//solve
-		debug(parameters, "solve");
+		debug(parameters, "solving group " + group);
 		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
+
+		debug(parameters, "group " + group + " done");
 
 		Groups.copyResultsForGroup(model, groupResult, result, group);
 	}
