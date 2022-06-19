@@ -2,6 +2,7 @@ package org.processmining.longdistancedependencies.plugins;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
@@ -21,6 +22,8 @@ import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
 import org.processmining.longdistancedependencies.function.Function;
+import org.processmining.longdistancedependencies.solve.FixParameters;
+import org.processmining.longdistancedependencies.solve.Groups;
 import org.processmining.longdistancedependencies.solve.Solver;
 import org.processmining.plugins.InductiveMiner.plugins.dialogs.IMMiningDialog;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
@@ -122,28 +125,38 @@ public class MineLongDistanceDependenciesPlugin {
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
 		//debug(parameters, choiceData);
 
-		debug(parameters, "determine parameters to fix");
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model,
-				parameters.isAssumeLogIsComplete(), canceller);
-		//debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
+		int numberOfParameters = (1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes();
+		double[] result = new double[numberOfParameters];
 
-		//to functions
-		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
-				model.getMaxNumberOfNodes(), parametersToFix, model);
+		//find groups
+		List<Set<Integer>> groups = Groups.getGroups(choiceData);
+		debug(parameters, "groups " + groups);
 
-		//create target values
-		double[] values = new double[equations.getFirst().size()];
-		int i = 0;
-		for (Function function : equations.getFirst()) {
-			values[i] = function.getValue(null);
-			i++;
+		for (Set<Integer> group : groups) {
+			debug(parameters, "group " + group);
+
+			//fix parameters
+			int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
+			debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
+
+			//to functions
+			Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
+					model.getMaxNumberOfNodes(), parametersToFix, model);
+
+			//create target values
+			double[] values = new double[equations.getFirst().size()];
+			int i = 0;
+			for (Function function : equations.getFirst()) {
+				values[i] = function.getValue(null);
+				i++;
+			}
+
+			//solve
+			debug(parameters, "solve");
+			double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
+
+			Groups.copyResultsForGroup(model, groupResult, result, group);
 		}
-
-		//solve
-		debug(parameters, "solve dependencies");
-		double[] result = Solver.solve(values, equations.getSecond(),
-				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes(), parametersToFix,
-				ChoiceData2Functions.fixValue);
 
 		debug(parameters, "result:");
 		debug(parameters, Arrays.toString(result));

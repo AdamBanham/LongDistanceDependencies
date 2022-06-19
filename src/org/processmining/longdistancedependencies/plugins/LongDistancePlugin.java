@@ -3,13 +3,9 @@ package org.processmining.longdistancedependencies.plugins;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.apache.commons.math3.util.Pair;
-import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
 import org.processmining.acceptingpetrinet.models.impl.AcceptingPetriNetFactory;
@@ -31,16 +27,8 @@ import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.events.ProgressEventListener.ListenerList;
 import org.processmining.framework.plugin.impl.FieldSetException;
 import org.processmining.framework.providedobjects.ProvidedObjectManager;
-import org.processmining.longdistancedependencies.choicedata.ChoiceData;
-import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
-import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
-import org.processmining.longdistancedependencies.function.Function;
-import org.processmining.longdistancedependencies.solve.Solver;
-import org.processmining.plugins.InductiveMiner.mining.MiningParameters;
-import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
-import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFiltered;
-import org.processmining.plugins.inductiveVisualMiner.ivmlog.IvMLogFilteredImpl;
-import org.processmining.plugins.inductiveVisualMiner.plugins.InductiveVisualMinerAlignmentComputation;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParametersAbstract;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParametersDefault;
 import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
 public class LongDistancePlugin {
@@ -59,7 +47,6 @@ public class LongDistancePlugin {
 		//IvMModel model = new IvMModel(DfmImportPlugin.readFile(new FileInputStream(modelFile)));
 		AcceptingPetriNet aNet = AcceptingPetriNetFactory.createAcceptingPetriNet();
 		aNet.importFromStream(new FakeContext(), new FileInputStream(modelFile));
-		IvMModel model = new IvMModel(aNet);
 
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(new FakeContext(), logFile);
 
@@ -75,81 +62,16 @@ public class LongDistancePlugin {
 		//			writer.close();
 		//		}
 
-		//align
 		ProMCanceller canceller = new ProMCanceller() {
 			public boolean isCancelled() {
 				return false;
 			}
 		};
-		XEventClassifier classifier = MiningParameters.getDefaultClassifier();
-		IvMLogFiltered ivmLog = new IvMLogFilteredImpl(
-				InductiveVisualMinerAlignmentComputation.align(model, log, classifier, canceller));
+		LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
+		parameters.setDebug(true);
 
-		//create choice data
-		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
-		System.out.println(choiceData);
+		MineLongDistanceDependenciesPlugin.mine(aNet, log, parameters, canceller);
 
-		//find fixed parameters
-		int[] parametersToFix = ChoiceData2Functions.getParametersToFix(choiceData, model.getMaxNumberOfNodes(), model,
-				false, canceller);
-		System.out.println("fixing parameters " + Arrays.toString(parametersToFix));
-
-		//to functions
-		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
-				model.getMaxNumberOfNodes(), parametersToFix, model);
-		System.out.println("equations: ");
-		for (int i = 0; i < equations.getFirst().size(); i++) {
-			System.out.println(
-					equations.getFirst().get(i).toLatex() + " ={}& " + equations.getSecond().get(i).toLatex() + "\\\\");
-		}
-
-		double[] values = new double[equations.getFirst().size()];
-		int i = 0;
-		for (Function function : equations.getFirst()) {
-			values[i] = function.getValue(null);
-			i++;
-		}
-
-		//solve
-		double[] result = Solver.solve(values, equations.getSecond(),
-				(1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes(), parametersToFix,
-				ChoiceData2Functions.fixValue);
-
-		System.out.println();
-		System.out.println("result:");
-		System.out.println(Arrays.toString(result));
-		System.out.println(toString(result, model));
-	}
-
-	public static String toString(double[] parameters, IvMModel model) {
-		StringBuilder result = new StringBuilder();
-
-		for (int node : model.getAllNodes()) {
-			if (model.isActivity(node)) {
-				result.append(model.getActivityName(node));
-			} else {
-				result.append("silent step #");
-				result.append(node);
-			}
-			result.append(": base weight ");
-			result.append(parameters[ChoiceData2Functions.getParameterIndexBase(node)]);
-			result.append(", \tadjustment factors: ");
-			for (int node2 : model.getAllNodes()) {
-				if (model.isActivity(node2)) {
-					result.append(model.getActivityName(node2));
-				} else {
-					result.append("silent step #");
-					result.append(node2);
-				}
-				result.append(": ");
-				result.append(parameters[ChoiceData2Functions.getParameterIndexAdjustment(node, node2,
-						model.getMaxNumberOfNodes())]);
-				result.append(", ");
-			}
-			result.append("\n");
-		}
-
-		return result.toString();
 	}
 
 	public static class FakeContext implements PluginContext {

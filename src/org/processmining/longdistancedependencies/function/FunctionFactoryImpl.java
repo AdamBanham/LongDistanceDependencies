@@ -1,5 +1,8 @@
 package org.processmining.longdistancedependencies.function;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.util.Arrays;
 
 public class FunctionFactoryImpl implements FunctionFactory {
@@ -21,15 +24,71 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function product(Function... functions) {
-		return new Product(functions);
+		List<Function> constants = new ArrayList<>();
+		List<Function> B = new ArrayList<>();
+		for (Function function : functions) {
+			if (function instanceof Constant) {
+				constants.add(function);
+			} else {
+				B.add(function);
+			}
+		}
+
+		if (constants.size() <= 1) {
+			return new Product(functions);
+		}
+
+		double constantsFactor = 1;
+		for (Function function : constants) {
+			constantsFactor *= function.getValue(null);
+		}
+
+		if (B.size() == 0) {
+			return constant(constantsFactor);
+		}
+
+		Function[] Ba = new Function[B.size() + 1];
+		B.toArray(Ba);
+		Ba[Ba.length - 1] = constant(constantsFactor);
+		return new Product(Ba);
 	}
 
 	public Function division(Function functionA, Function functionB) {
+		if (functionA instanceof Constant && functionB instanceof Constant) {
+			return constant(functionA.getValue(null) / functionB.getValue(null));
+		}
+
 		return new Division(functionA, functionB);
 	}
 
 	public Function sum(Function... functions) {
-		return new Sum(functions);
+		List<Function> constants = new ArrayList<>();
+		List<Function> B = new ArrayList<>();
+		for (Function function : functions) {
+			if (function instanceof Constant) {
+				constants.add(function);
+			} else {
+				B.add(function);
+			}
+		}
+
+		if (constants.size() <= 1) {
+			return new Sum(functions);
+		}
+
+		double constantsFactor = 0;
+		for (Function function : constants) {
+			constantsFactor += function.getValue(null);
+		}
+
+		if (B.size() == 0) {
+			return constant(constantsFactor);
+		}
+
+		Function[] Ba = new Function[B.size() + 1];
+		B.toArray(Ba);
+		Ba[Ba.length - 1] = constant(constantsFactor);
+		return new Sum(Ba);
 	}
 
 	public Function variable(int parameterIndex) {
@@ -37,8 +96,14 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function variablePower(int parameterIndex, String name, int power) {
+		if (power == 0) {
+			return constant(1);
+		}
 		if (power == 1) {
 			return variable(parameterIndex, name);
+		}
+		if (Arrays.contains(fixParameters, parameterIndex)) {
+			return constant(1);
 		}
 		return new VariablePower(parameterIndex, name, power);
 	}

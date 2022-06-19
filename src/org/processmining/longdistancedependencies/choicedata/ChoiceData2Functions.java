@@ -2,23 +2,14 @@ package org.processmining.longdistancedependencies.choicedata;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.math3.util.Pair;
-import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.longdistancedependencies.FixedMultiset;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIterator;
 import org.processmining.longdistancedependencies.function.Function;
 import org.processmining.longdistancedependencies.function.FunctionFactory;
 import org.processmining.longdistancedependencies.function.FunctionFactoryImpl;
-import org.processmining.plugins.InductiveMiner.graphs.ConnectedComponents2;
-import org.processmining.plugins.InductiveMiner.graphs.Graph;
-import org.processmining.plugins.InductiveMiner.graphs.GraphImplQuadratic;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
-
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
-import lpsolve.LpSolveException;
 
 /**
  * Parameters:
@@ -92,113 +83,6 @@ public class ChoiceData2Functions {
 		}
 
 		return Pair.create(values, equations);
-	}
-
-	/**
-	 * The parameters can be limited by fixing all parameters of one transition
-	 * of each connected component. This function takes an transition from each
-	 * connected component.
-	 * 
-	 * This assumes that the base weight parameters are numbered 0..n-1.
-	 * 
-	 * @param data
-	 * @param canceller
-	 * @return
-	 * @throws LpSolveException
-	 */
-	public static int[] getParametersToFix(ChoiceData data, int numberOfTransitions, IvMModel model,
-			boolean assumeLogIsComplete, ProMCanceller canceller) throws LpSolveException {
-
-		//find groups of dependent transitions
-		List<Set<Integer>> groups;
-		{
-			Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
-			ChoiceIterator it = data.iterator();
-			while (it.hasNext()) {
-				it.next();
-				int[] executedNext = it.getExecutedNext();
-
-				//the transitions from executedNext appear together and must be merged
-				int transitionIndex = FixedMultiset.next(executedNext, -1);
-				int transitionIndexT = FixedMultiset.next(executedNext, transitionIndex);
-				while (transitionIndexT >= 0) {
-
-					graph.addEdge((Integer) transitionIndex, (Integer) transitionIndexT, 1);
-
-					transitionIndex = transitionIndexT;
-					transitionIndexT = FixedMultiset.next(executedNext, transitionIndexT);
-				}
-			}
-			groups = ConnectedComponents2.compute(graph);
-			System.out.println("components " + groups);
-		}
-
-		TIntList result = new TIntArrayList();
-
-		/**
-		 * Strategy 1: pick an arbitrary transition and fix all of its
-		 * parameters.
-		 */
-		for (Set<Integer> component : groups) {
-			int transition = preferredTransitionToFix(component, model);
-			result.add(getParameterIndexBase(transition)); //base weight
-			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-				result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions)); //adjustment weight
-			}
-		}
-
-		if (assumeLogIsComplete) {
-			/**
-			 * Strategy 2: find transitions that are mandatory and single for
-			 * transition.
-			 */
-			{
-				boolean[][] removed = new boolean[numberOfTransitions][numberOfTransitions];
-				ChoiceIterator it = data.iterator();
-				while (it.hasNext()) {
-					int[] history = it.next();
-					int[] executedNext = it.getExecutedNext();
-
-					for (int transition = 0; transition < numberOfTransitions; transition++) {
-						if (executedNext[transition] >= 1) {
-							for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-								if (history[transitionT] != 1) {
-									removed[transition][transitionT] = true;
-								}
-							}
-						}
-					}
-
-				}
-
-				for (int transition = 0; transition < numberOfTransitions; transition++) {
-					for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-						if (!removed[transition][transitionT]) {
-							//transitionT is mandatory and single for transition; fix the corresponding parameter to 1
-							result.add(getParameterIndexAdjustment(transition, transitionT, numberOfTransitions));
-						}
-					}
-				}
-			}
-
-			FixParametersSequentialXor.getParametersToFix(model, data, canceller, result);
-		} else {
-
-		}
-
-		return result.toArray();
-
-	}
-
-	public static int preferredTransitionToFix(Iterable<Integer> transitions, IvMModel model) {
-		//prefer to fix taus
-		for (int transition : transitions) {
-			if (model.isTau(transition)) {
-				return transition;
-			}
-		}
-
-		return transitions.iterator().next();
 	}
 
 	public static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions,
