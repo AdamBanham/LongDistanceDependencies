@@ -86,7 +86,7 @@ public class Solver {
 				.target(values)//
 				.parameterValidator(validator)//
 				.lazyEvaluation(false)//
-				.maxEvaluations(1000)//
+				.maxEvaluations(10000)//
 				.maxIterations(1000)//
 				.build();
 		LeastSquaresOptimizer optimiser = new LevenbergMarquardtOptimizer().withCostRelativeTolerance(1.0e-12)

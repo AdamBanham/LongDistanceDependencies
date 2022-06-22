@@ -183,6 +183,15 @@ public class MineLongDistanceDependenciesPlugin {
 			throws LpSolveException {
 		debug(parameters, "group " + group);
 
+		/**
+		 * Optimisation: if the group is singular, then return. The result array
+		 * will already have been set to all-1s, so we don't need to do
+		 * anything.
+		 */
+		if (group.size() < 2) {
+			return;
+		}
+
 		//fix parameters
 		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
 		//		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));

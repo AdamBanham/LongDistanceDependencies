@@ -68,6 +68,23 @@ public class FixParameters {
 			}
 		}
 
+		/**
+		 * Strategy 4: fix equivalent transitions
+		 */
+		for (int transitionA : group) {
+			BitSet equivalent = Equivalent.getEquivalent(model, data, transitionA);
+
+			for (int transitionB = equivalent.nextSetBit(0); transitionB >= 0; transitionB = equivalent
+					.nextSetBit(transitionB + 1)) {
+				result.add(ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
+						numberOfTransitions)); //adjustment weight
+
+				if (transitionB == Integer.MAX_VALUE) {
+					break;
+				}
+			}
+		}
+
 		//		if (assumeLogIsComplete) {
 		//			/**
 		//			 * Strategy 2: find transitions that are mandatory and single for
