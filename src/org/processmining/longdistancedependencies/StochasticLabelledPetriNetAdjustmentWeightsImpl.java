@@ -82,4 +82,34 @@ public class StochasticLabelledPetriNetAdjustmentWeightsImpl extends StochasticL
 	public double getTransitionAdjustmentWeight(int transitionOn, int transitionHistory) {
 		return transitionAdjustmentFactors.get(transitionOn).get(transitionHistory);
 	}
+
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+
+		for (int transition = 0; transition < getNumberOfTransitions(); transition++) {
+			if (!isTransitionSilent(transition)) {
+				result.append(getTransitionLabel(transition));
+			} else {
+				result.append("silent step #");
+				result.append(transition);
+			}
+			result.append(": base weight ");
+			result.append(getTransitionBaseWeight(transition));
+			result.append(", \tadjustment factors: ");
+			for (int transitionB = 0; transitionB < getNumberOfTransitions(); transitionB++) {
+				if (!isTransitionSilent(transitionB)) {
+					result.append(getTransitionLabel(transitionB));
+				} else {
+					result.append("silent step #");
+					result.append(transitionB);
+				}
+				result.append(": ");
+				result.append(getTransitionAdjustmentWeight(transition, transitionB));
+				result.append(", ");
+			}
+			result.append("\n");
+		}
+
+		return result.toString();
+	}
 }

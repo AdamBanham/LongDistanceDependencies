@@ -24,6 +24,8 @@ import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
 import org.processmining.longdistancedependencies.function.Function;
+import org.processmining.longdistancedependencies.postprocess.Alternatives;
+import org.processmining.longdistancedependencies.postprocess.MandatoryAndExclusive;
 import org.processmining.longdistancedependencies.solve.FixParameters;
 import org.processmining.longdistancedependencies.solve.Groups;
 import org.processmining.longdistancedependencies.solve.Solver;
@@ -171,11 +173,19 @@ public class MineLongDistanceDependenciesPlugin {
 			throw error.get();
 		}
 
-		debug(parameters, "result:");
-		debug(parameters, Arrays.toString(result));
-		debug(parameters, toString(result, model));
+		//		debug(parameters, "solver result:");
+		//		debug(parameters, Arrays.toString(result));
+		//		debug(parameters, toString(result, model));
 
 		applyToNet(result, resultNet, model);
+		
+		debug(parameters, resultNet);
+
+		debug(parameters, "post-process");
+		MandatoryAndExclusive.postProcess(resultNet, choiceData, groups);
+		Alternatives.postProcess(resultNet, choiceData);
+		
+		debug(parameters, resultNet);
 	}
 
 	private static void solveGroup(IvMModel model, LongDistanceDependenciesParameters parameters,
