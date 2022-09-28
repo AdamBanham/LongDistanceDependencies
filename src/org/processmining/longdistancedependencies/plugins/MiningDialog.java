@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -68,61 +67,6 @@ public class MiningDialog extends JPanel {
 					parameters.setClassifier(classifiers.getSelectedClassifier());
 				}
 			});
-		}
-
-		gridy++;
-
-		//spacer
-		{
-			JLabel spacer = factory.createLabel(" ");
-			GridBagConstraints cSpacer = new GridBagConstraints();
-			cSpacer.gridx = 0;
-			cSpacer.gridy = gridy;
-			cSpacer.anchor = GridBagConstraints.WEST;
-			add(spacer, cSpacer);
-		}
-
-		gridy++;
-
-		//log assumption
-		{
-			final JLabel logAssumptionLabel = factory.createLabel("Log assumption");
-			GridBagConstraints cClassifierLabel = new GridBagConstraints();
-			cClassifierLabel.gridx = 0;
-			cClassifierLabel.gridy = gridy;
-			cClassifierLabel.weightx = 0.4;
-			cClassifierLabel.anchor = GridBagConstraints.NORTHWEST;
-			add(logAssumptionLabel, cClassifierLabel);
-
-			final JCheckBox logAssumption = factory.createCheckBox(
-					"Assume that the log is eventually follows complete with respect to the model.",
-					parameters.isAssumeLogIsComplete());
-			GridBagConstraints cLog = new GridBagConstraints();
-			cLog.gridx = 1;
-			cLog.gridy = gridy;
-			cLog.anchor = GridBagConstraints.NORTHWEST;
-			cLog.fill = GridBagConstraints.HORIZONTAL;
-			cLog.weightx = 0.6;
-			add(logAssumption, cLog);
-
-			logAssumption.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					parameters.setLogAssumption(logAssumption.isSelected());
-				}
-			});
-		}
-
-		gridy++;
-
-		{
-			JLabel assumptionValue = factory.createLabel(
-					"<html>This will apply further reduction techniques.<br>This will take longer, but might make the model simpler by a reduction of parameters.</html>");
-			GridBagConstraints cAssumptionValue = new GridBagConstraints();
-			cAssumptionValue.gridx = 1;
-			cAssumptionValue.gridy = gridy;
-			cAssumptionValue.anchor = GridBagConstraints.NORTHWEST;
-			cAssumptionValue.weightx = 0.6;
-			add(assumptionValue, cAssumptionValue);
 		}
 
 		gridy++;

@@ -12,7 +12,9 @@ import org.processmining.plugins.InductiveMiner.graphs.Graph;
 import org.processmining.plugins.InductiveMiner.graphs.GraphImplQuadratic;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
+import gnu.trove.TIntCollection;
 import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
 
 public class Groups {
 
@@ -42,7 +44,8 @@ public class Groups {
 		return groups;
 	}
 
-	public static void fixParametersNotInGroup(IvMModel model, Set<Integer> group, TIntList result) {
+	public static TIntCollection fixParametersNotInGroup(IvMModel model, Set<Integer> group) {
+		TIntList result = new TIntArrayList();
 		for (int transition = 0; transition < model.getMaxNumberOfNodes(); transition++) {
 			if (!group.contains(transition)) {
 				result.add(ChoiceData2Functions.getParameterIndexBase(transition)); //base weight
@@ -52,6 +55,7 @@ public class Groups {
 				}
 			}
 		}
+		return result;
 	}
 
 	public static void copyResultsForGroup(IvMModel model, double[] source, double[] target, Set<Integer> group) {

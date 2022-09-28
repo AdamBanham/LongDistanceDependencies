@@ -6,10 +6,13 @@ public interface LongDistanceDependenciesParameters {
 
 	public XEventClassifier getClassifier();
 
-	public boolean isAssumeLogIsComplete();
-
 	public boolean isDebug();
 
 	public int getNumberOfThreads();
 
+	public boolean isPerformPostProcessing();
+	
+	public boolean isEnableLongDistanceDependencies();
+
+	public double getAlpha();
 }

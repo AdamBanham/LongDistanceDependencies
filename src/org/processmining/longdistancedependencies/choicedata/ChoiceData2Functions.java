@@ -42,6 +42,7 @@ public class ChoiceData2Functions {
 			if (FixedMultiset.setSizeLargerThanOne(executedNext)) {
 
 				int transitionIndex = FixedMultiset.next(executedNext, -1);
+				
 				transitionIndex = FixedMultiset.next(executedNext, transitionIndex); //optimisation: one equality does not add any information
 				while (transitionIndex >= 0) {
 

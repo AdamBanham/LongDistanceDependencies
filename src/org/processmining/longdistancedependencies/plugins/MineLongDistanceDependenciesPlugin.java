@@ -129,7 +129,7 @@ public class MineLongDistanceDependenciesPlugin {
 		//create choice data
 		debug(parameters, "create choice data");
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
-		//debug(parameters, choiceData);
+		//		debug(parameters, choiceData);
 
 		int numberOfParameters = (1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes();
 		double[] result = new double[numberOfParameters];
@@ -139,7 +139,8 @@ public class MineLongDistanceDependenciesPlugin {
 		List<Set<Integer>> groups = Groups.getGroups(choiceData);
 		debug(parameters, "groups " + groups);
 
-		Thread[] threads = new Thread[Math.max(parameters.getNumberOfThreads(), groups.size())];
+		assert parameters.getNumberOfThreads() > 0;
+		Thread[] threads = new Thread[Math.min(parameters.getNumberOfThreads(), groups.size())];
 		AtomicInteger nextGroupIndex = new AtomicInteger(0);
 		AtomicReference<LpSolveException> error = new AtomicReference<>(null);
 		for (int t = 0; t < threads.length; t++) {
@@ -178,13 +179,15 @@ public class MineLongDistanceDependenciesPlugin {
 		//		debug(parameters, toString(result, model));
 
 		applyToNet(result, resultNet, model);
-		
+
 		debug(parameters, resultNet);
 
-		debug(parameters, "post-process");
-		MandatoryAndExclusive.postProcess(resultNet, choiceData, groups);
-		Alternatives.postProcess(resultNet, choiceData);
-		
+		if (parameters.isPerformPostProcessing()) {
+			debug(parameters, "post-process");
+			MandatoryAndExclusive.postProcess(resultNet, choiceData, groups);
+			Alternatives.postProcess(resultNet, choiceData);
+		}
+
 		debug(parameters, resultNet);
 	}
 
@@ -203,13 +206,13 @@ public class MineLongDistanceDependenciesPlugin {
 		}
 
 		//fix parameters
-		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, canceller);
+		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, parameters, canceller);
 		//		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
 
 		//to functions
 		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
 				model.getMaxNumberOfNodes(), parametersToFix, model);
-		//			debug(parameters, equations);
+		//		debug(parameters, equations);
 
 		//create target values
 		double[] values = new double[equations.getFirst().size()];
@@ -220,7 +223,8 @@ public class MineLongDistanceDependenciesPlugin {
 		}
 
 		//solve
-		debug(parameters, "solving group " + group);
+		debug(parameters, "solving group " + group + " with " + (numberOfParameters - parametersToFix.length) + "/"
+				+ numberOfParameters + " parameters");
 		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
 
 		debug(parameters, "group " + group + " done");

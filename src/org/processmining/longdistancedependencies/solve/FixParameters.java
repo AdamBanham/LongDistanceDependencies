@@ -1,16 +1,17 @@
 package org.processmining.longdistancedependencies.solve;
 
-import java.util.BitSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.processmining.framework.plugin.ProMCanceller;
+import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
+import org.processmining.longdistancedependencies.plugins.MineLongDistanceDependenciesPlugin;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
-import gnu.trove.list.TIntList;
+import gnu.trove.TIntCollection;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.hash.TIntHashSet;
 import lpsolve.LpSolveException;
 
 public class FixParameters {
@@ -22,65 +23,68 @@ public class FixParameters {
 	 * This assumes that the base weight parameters are numbered 0..n-1.
 	 * 
 	 * @param data
+	 * @param parameters
 	 * @param canceller
 	 * @return
 	 * @throws LpSolveException
 	 */
-	public static int[] getParametersToFix(ChoiceData data, IvMModel model, Set<Integer> group, ProMCanceller canceller)
-			throws LpSolveException {
+	public static int[] getParametersToFix(ChoiceData data, IvMModel model, Set<Integer> group,
+			LongDistanceDependenciesParameters parameters, ProMCanceller canceller) throws LpSolveException {
 
 		int numberOfTransitions = model.getMaxNumberOfNodes();
 
-		TIntList result = new TIntArrayList();
+		TIntCollection result = new TIntArrayList();
 
 		/**
-		 * Strategy 1: fix all parameters that have no meaning for the group
+		 * Fix all parameters that have no meaning for the group
 		 */
-		Groups.fixParametersNotInGroup(model, group, result);
+		result.addAll(Groups.fixParametersNotInGroup(model, group));
+		MineLongDistanceDependenciesPlugin.debug(parameters,
+				" remove parameters after groupless              " + result);
 
 		/**
-		 * Strategy 2: pick an arbitrary transition from the group and fix all
-		 * of its parameters.
+		 * Fix all parameters for which no observations have been made
 		 */
-		{
-			int transition = preferredTransitionToFix(group, model);
-			result.add(ChoiceData2Functions.getParameterIndexBase(transition)); //base weight
-			for (int transitionT = 0; transitionT < numberOfTransitions; transitionT++) {
-				result.add(
-						ChoiceData2Functions.getParameterIndexAdjustment(transition, transitionT, numberOfTransitions)); //adjustment weight
-			}
-		}
+		result.addAll(FixParametersNeverInHistory.fix(numberOfTransitions, data, group));
+		MineLongDistanceDependenciesPlugin.debug(parameters,
+				" remove parameters after not observed           " + result);
 
 		/**
-		 * Strategy 3: fix mandatory dependencies.
+		 * Fix all parameters where B is mandatory before A anyway
 		 */
-		for (int transitionA : group) {
-			BitSet mandatory = Mandatory.getMandatory(model, data, transitionA);
-
-			for (int transitionB = mandatory.nextSetBit(0); transitionB >= 0; transitionB = mandatory
-					.nextSetBit(transitionB + 1)) {
-				result.add(ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
-						numberOfTransitions)); //adjustment weight
-
-				if (transitionB == Integer.MAX_VALUE) {
-					break;
-				}
-			}
-		}
+		result.addAll(FixParametersAlwaysOnce.fix(numberOfTransitions, data, group));
+		MineLongDistanceDependenciesPlugin.debug(parameters,
+				" remove parameters after always once            " + result);
 
 		/**
-		 * Strategy 4: fix equivalent transitions
+		 * Fix equivalent transitions
 		 */
-		for (int transitionA : group) {
-			BitSet equivalent = Equivalent.getEquivalent(model, data, transitionA);
+		result.addAll(FixParametersEquivalentTransitions.fix(numberOfTransitions, data, group));
+		MineLongDistanceDependenciesPlugin.debug(parameters,
+				" remove parameters after equivalent transitions " + result);
 
-			for (int transitionB = equivalent.nextSetBit(0); transitionB >= 0; transitionB = equivalent
-					.nextSetBit(transitionB + 1)) {
-				result.add(ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
-						numberOfTransitions)); //adjustment weight
+		/**
+		 * Pick an arbitrary transition from the group and fix all of its
+		 * parameters.
+		 */
+		result.addAll(FixParametersArbitraryFromGroup.fix(model, group, result));
+		MineLongDistanceDependenciesPlugin.debug(parameters,
+				" remove parameters after arbitrary group        " + result);
 
-				if (transitionB == Integer.MAX_VALUE) {
-					break;
+		/**
+		 * Fix statistically independent parameters
+		 */
+		result.addAll(StatisticalTests.remove(numberOfTransitions, data, result, parameters.getAlpha()));
+		MineLongDistanceDependenciesPlugin.debug(parameters, " remove parameters after tests                  " + result);
+
+		/**
+		 * Special case: no long-distance dependencies
+		 */
+		if (!parameters.isEnableLongDistanceDependencies()) {
+			for (int transitionA = 0; transitionA < numberOfTransitions; transitionA++) {
+				for (int transitionB = 0; transitionB < numberOfTransitions; transitionB++) {
+					result.add(ChoiceData2Functions.getParameterIndexAdjustment(transitionA, transitionB,
+							numberOfTransitions)); //adjustment weight
 				}
 			}
 		}
@@ -124,19 +128,10 @@ public class FixParameters {
 		//
 		//		}
 
+		result = new TIntHashSet(result);
+
 		return result.toArray();
 
 	}
 
-	public static int preferredTransitionToFix(Set<Integer> group, IvMModel model) {
-		//prefer to fix taus
-		for (Iterator<Integer> it = group.iterator(); it.hasNext();) {
-			int transition = it.next();
-			if (model.isTau(transition)) {
-				return transition;
-			}
-		}
-
-		return group.iterator().next();
-	}
 }
