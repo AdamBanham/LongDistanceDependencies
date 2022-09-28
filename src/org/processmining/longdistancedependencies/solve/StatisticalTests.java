@@ -1,9 +1,5 @@
 package org.processmining.longdistancedependencies.solve;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
@@ -11,8 +7,11 @@ import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIt
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 
 import gnu.trove.TIntCollection;
+import gnu.trove.iterator.TIntIterator;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
 
 public class StatisticalTests {
 	public static TIntCollection remove(int numberOfTransitions, ChoiceData data,
@@ -76,7 +75,7 @@ public class StatisticalTests {
 
 		//remove columns that are shorter than 5
 		{
-			List<Integer> toBeRemoved = new ArrayList<>();
+			TIntSet toBeRemoved = new TIntHashSet();
 			for (int i = 0; i < counts.length; i++) {
 				for (int j = 0; j < counts[i].length; j++) {
 					if (counts[i][j] < 5) {
@@ -91,9 +90,11 @@ public class StatisticalTests {
 				return false;
 			}
 
-			Collections.reverse(toBeRemoved);
-			for (int tbr : toBeRemoved) {
-				counts = ArrayUtils.remove(counts, tbr);
+			TIntList tbrs = new TIntArrayList(toBeRemoved);
+			tbrs.sort();
+			tbrs.reverse();
+			for (TIntIterator it = tbrs.iterator(); it.hasNext();) {
+				counts = ArrayUtils.remove(counts, it.next());
 			}
 		}
 

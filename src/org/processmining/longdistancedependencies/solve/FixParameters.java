@@ -6,7 +6,6 @@ import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
-import org.processmining.longdistancedependencies.plugins.MineLongDistanceDependenciesPlugin;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
 
 import gnu.trove.TIntCollection;
@@ -39,43 +38,46 @@ public class FixParameters {
 		 * Fix all parameters that have no meaning for the group
 		 */
 		result.addAll(Groups.fixParametersNotInGroup(model, group));
-		MineLongDistanceDependenciesPlugin.debug(parameters,
-				" remove parameters after groupless              " + result);
+		//		MineLongDistanceDependenciesPlugin.debug(parameters,
+		//				" remove parameters after groupless              " + result);
 
 		/**
 		 * Fix all parameters for which no observations have been made
 		 */
 		result.addAll(FixParametersNeverInHistory.fix(numberOfTransitions, data, group));
-		MineLongDistanceDependenciesPlugin.debug(parameters,
-				" remove parameters after not observed           " + result);
+//		MineLongDistanceDependenciesPlugin.debug(parameters,
+//				" remove parameters after not observed           " + result);
 
 		/**
 		 * Fix all parameters where B is mandatory before A anyway
 		 */
 		result.addAll(FixParametersAlwaysOnce.fix(numberOfTransitions, data, group));
-		MineLongDistanceDependenciesPlugin.debug(parameters,
-				" remove parameters after always once            " + result);
+//		MineLongDistanceDependenciesPlugin.debug(parameters,
+//				" remove parameters after always once            " + result);
 
 		/**
 		 * Fix equivalent transitions
 		 */
-		result.addAll(FixParametersEquivalentTransitions.fix(numberOfTransitions, data, group));
-		MineLongDistanceDependenciesPlugin.debug(parameters,
-				" remove parameters after equivalent transitions " + result);
+//		result.addAll(FixParametersEquivalentTransitions.fix(numberOfTransitions, data, group));
+//		MineLongDistanceDependenciesPlugin.debug(parameters,
+//				" remove parameters after equivalent transitions " + result);
 
 		/**
 		 * Pick an arbitrary transition from the group and fix all of its
 		 * parameters.
 		 */
 		result.addAll(FixParametersArbitraryFromGroup.fix(model, group, result));
-		MineLongDistanceDependenciesPlugin.debug(parameters,
-				" remove parameters after arbitrary group        " + result);
+//		MineLongDistanceDependenciesPlugin.debug(parameters,
+//				" remove parameters after arbitrary group        " + result);
 
 		/**
 		 * Fix statistically independent parameters
 		 */
-		result.addAll(StatisticalTests.remove(numberOfTransitions, data, result, parameters.getAlpha()));
-		MineLongDistanceDependenciesPlugin.debug(parameters, " remove parameters after tests                  " + result);
+		if (parameters.getAlpha() < 1) {
+			result.addAll(StatisticalTests.remove(numberOfTransitions, data, result, parameters.getAlpha()));
+//			MineLongDistanceDependenciesPlugin.debug(parameters,
+//					" remove parameters after tests                  " + result);
+		}
 
 		/**
 		 * Special case: no long-distance dependencies
