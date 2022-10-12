@@ -129,7 +129,7 @@ public class MineLongDistanceDependenciesPlugin {
 		//create choice data
 		debug(parameters, "create choice data");
 		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, resultNet, canceller);
-		debug(parameters, choiceData);
+		//debug(parameters, choiceData);
 
 		int numberOfParameters = (1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes();
 		double[] result = new double[numberOfParameters];
@@ -211,11 +211,11 @@ public class MineLongDistanceDependenciesPlugin {
 		//to equations
 		List<Equation> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
 				parametersToFix, model);
-		debug(parameters, equations);
+		//debug(parameters, equations);
 
 		//create initial guess
 		double[] initialParameterGuesses = InitialiseWithFrequencies.guess(choiceData, model, group, parametersToFix,
-				numberOfParameters);
+				numberOfParameters, parameters, canceller);
 
 		//solve
 		debug(parameters, "solving group " + group + " with " + (numberOfParameters - parametersToFix.length) + "/"
@@ -223,7 +223,6 @@ public class MineLongDistanceDependenciesPlugin {
 		double[] groupResult = Solver.solve(equations, numberOfParameters, parametersToFix, initialParameterGuesses);
 
 		debug(parameters, "group " + group + " done");
-		System.out.println(Arrays.toString(groupResult));
 
 		Groups.copyResultsForGroup(model, groupResult, result, group);
 	}

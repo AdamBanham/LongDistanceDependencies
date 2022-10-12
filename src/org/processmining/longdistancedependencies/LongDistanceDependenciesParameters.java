@@ -2,7 +2,7 @@ package org.processmining.longdistancedependencies;
 
 import org.deckfour.xes.classification.XEventClassifier;
 
-public interface LongDistanceDependenciesParameters {
+public interface LongDistanceDependenciesParameters extends Cloneable {
 
 	public XEventClassifier getClassifier();
 
@@ -11,10 +11,10 @@ public interface LongDistanceDependenciesParameters {
 	public int getNumberOfThreads();
 
 	public boolean isPerformPostProcessing();
-	
+
 	public boolean isEnableLongDistanceDependencies();
 
 	public double getAlpha();
-	
+
 	public boolean isApplySymmetries();
 }

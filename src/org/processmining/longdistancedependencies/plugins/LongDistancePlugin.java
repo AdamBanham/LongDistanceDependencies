@@ -71,7 +71,7 @@ public class LongDistancePlugin {
 		LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
 		parameters.setAlpha(1);
 		parameters.setApplySymmetries(true);
-		parameters.setEnableLongDistanceDependencies(false);
+		parameters.setEnableLongDistanceDependencies(true);
 		parameters.setPerformPostProcessing(false);
 		parameters.setDebug(true);
 		parameters.setNumberOfThreads(1);
