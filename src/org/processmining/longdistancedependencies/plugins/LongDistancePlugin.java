@@ -70,7 +70,7 @@ public class LongDistancePlugin {
 		};
 		LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
 		parameters.setAlpha(1);
-		parameters.setApplySymmetries(false);
+		parameters.setApplySymmetries(true);
 		parameters.setEnableLongDistanceDependencies(false);
 		parameters.setPerformPostProcessing(false);
 		parameters.setDebug(true);

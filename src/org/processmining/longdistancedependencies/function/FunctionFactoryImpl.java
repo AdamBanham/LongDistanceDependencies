@@ -51,13 +51,10 @@ public class FunctionFactoryImpl implements FunctionFactory {
 			return constant(constantsFactor);
 		}
 
-		if (constantsFactor == 1) {
-			if (B.size() == 1) {
-				return B.get(0);
-			}
+		if (constantsFactor == 1.0) {
 			Function[] Ba = new Function[B.size()];
 			B.toArray(Ba);
-			return new Product(Ba);
+			return product(Ba);
 		}
 
 		Function[] Ba = new Function[B.size() + 1];

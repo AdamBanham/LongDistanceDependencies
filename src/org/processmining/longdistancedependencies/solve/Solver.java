@@ -15,6 +15,7 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
+import org.processmining.longdistancedependencies.choicedata.Equation;
 import org.processmining.longdistancedependencies.function.Function;
 
 public class Solver {
@@ -23,7 +24,19 @@ public class Solver {
 
 	//https://scipopt.org/index.php#license
 
-	public static double[] solve(double[] values, List<Function> equations, int numberOfParameters, int[] fixParameters,
+	/**
+	 * 
+	 * @param values
+	 *            of the equations
+	 * @param equations
+	 * @param occurrences
+	 *            of the equations
+	 * @param numberOfParameters
+	 * @param fixParameters
+	 * @param initialParameterValues
+	 * @return
+	 */
+	public static double[] solve(List<Equation> equations, int numberOfParameters, int[] fixParameters,
 			double[] initialParameterValues) {
 		MultivariateJacobianFunction jfunction = new MultivariateJacobianFunction() {
 
@@ -34,7 +47,7 @@ public class Solver {
 				RealMatrix jacobian = new Array2DRowRealMatrix(equations.size(), numberOfParameters);
 
 				for (int equationIndex = 0; equationIndex < equations.size(); equationIndex++) {
-					Function observation = equations.get(equationIndex);
+					Function observation = equations.get(equationIndex).getFunction();
 
 					value.setEntry(equationIndex, observation.getValue(pointD));
 
@@ -71,7 +84,7 @@ public class Solver {
 			}
 		};
 
-		//initial guess: all weights are equal, and no adjustments
+		//set the initial guess
 		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
 		for (int parameter = 0; parameter < numberOfParameters; parameter++) {
 			initialGuess.setEntry(parameter, initialParameterValues[parameter]);
@@ -82,17 +95,24 @@ public class Solver {
 		//		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
 		//		initialGuess.set(2);
 
+		//set the weights
+		RealMatrix weight = new Array2DRowRealMatrix(equations.size(), equations.size());
+		for (int equation = 0; equation < equations.size(); equation++) {
+			weight.setEntry(equation, equation, equations.get(equation).getOccurrences());
+		}
+
 		LeastSquaresProblem problem = new LeastSquaresBuilder()//
 				.start(initialGuess)//
 				.model(jfunction)//
-				.target(values)//
+				.target(Equation.getValues(equations))//
+				.weight(weight)//
 				.parameterValidator(validator)//
 				.lazyEvaluation(false)//
 				.maxEvaluations(1000000)//
-				.maxIterations(100000)//
+				.maxIterations(1000000)//
 				.build();
-		LeastSquaresOptimizer optimiser = new LevenbergMarquardtOptimizer().withCostRelativeTolerance(1.0e-12)
-				.withParameterRelativeTolerance(1.0e-12);
+		LeastSquaresOptimizer optimiser = new LevenbergMarquardtOptimizer().withCostRelativeTolerance(1.0e-10)
+				.withParameterRelativeTolerance(1.0e-10);
 		//LeastSquaresOptimizer optimiser = new GaussNewtonOptimizer(GaussNewtonOptimizer.Decomposition.CHOLESKY);
 		Optimum optimum = optimiser.optimize(problem);
 

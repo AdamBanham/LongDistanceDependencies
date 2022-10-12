@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.math3.util.Pair;
 import org.deckfour.uitopia.api.event.TaskListener.InteractionResult;
 import org.deckfour.xes.model.XLog;
 import org.processmining.acceptingpetrinet.models.AcceptingPetriNet;
@@ -23,7 +22,7 @@ import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdju
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
 import org.processmining.longdistancedependencies.choicedata.ComputeChoiceData;
-import org.processmining.longdistancedependencies.function.Function;
+import org.processmining.longdistancedependencies.choicedata.Equation;
 import org.processmining.longdistancedependencies.postprocess.Alternatives;
 import org.processmining.longdistancedependencies.postprocess.MandatoryAndExclusive;
 import org.processmining.longdistancedependencies.solve.FixParameters;
@@ -209,18 +208,10 @@ public class MineLongDistanceDependenciesPlugin {
 		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, parameters, canceller);
 		//		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
 
-		//to functions
-		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
-				model.getMaxNumberOfNodes(), parametersToFix, model);
+		//to equations
+		List<Equation> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
+				parametersToFix, model);
 		debug(parameters, equations);
-
-		//create target values
-		double[] values = new double[equations.getFirst().size()];
-		int i = 0;
-		for (Function function : equations.getFirst()) {
-			values[i] = function.getValue(null);
-			i++;
-		}
 
 		//create initial guess
 		double[] initialParameterGuesses = InitialiseWithFrequencies.guess(choiceData, model, group, parametersToFix,
@@ -229,10 +220,10 @@ public class MineLongDistanceDependenciesPlugin {
 		//solve
 		debug(parameters, "solving group " + group + " with " + (numberOfParameters - parametersToFix.length) + "/"
 				+ numberOfParameters + " parameters");
-		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix,
-				initialParameterGuesses);
+		double[] groupResult = Solver.solve(equations, numberOfParameters, parametersToFix, initialParameterGuesses);
 
 		debug(parameters, "group " + group + " done");
+		System.out.println(Arrays.toString(groupResult));
 
 		Groups.copyResultsForGroup(model, groupResult, result, group);
 	}

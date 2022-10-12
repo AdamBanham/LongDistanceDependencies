@@ -22,9 +22,14 @@ public class InitialiseWithFrequencies {
 		double[] result = new double[numberOfParameters];
 		Arrays.fill(result, 1);
 		
-		for (int transition : group) {
-			
-		}
+		result[ChoiceData2Functions.getParameterIndexBase(0)] = 1;
+		result[ChoiceData2Functions.getParameterIndexBase(1)] = 0.8817;
+		result[ChoiceData2Functions.getParameterIndexBase(2)] = 0.8817;
+		result[ChoiceData2Functions.getParameterIndexBase(3)] = 0.73118;
+		result[ChoiceData2Functions.getParameterIndexBase(4)] = 1;
+		result[ChoiceData2Functions.getParameterIndexBase(5)] = 0.61827;
+		result[ChoiceData2Functions.getParameterIndexBase(6)] = 1;
+		result[ChoiceData2Functions.getParameterIndexBase(7)] = 0.645;
 		
 		return result;
 	}

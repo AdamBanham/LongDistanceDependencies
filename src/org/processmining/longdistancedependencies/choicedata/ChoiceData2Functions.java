@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import org.apache.commons.math3.util.Pair;
 import org.processmining.longdistancedependencies.FixedMultiset;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIterator;
 import org.processmining.longdistancedependencies.function.Function;
@@ -28,12 +27,11 @@ public class ChoiceData2Functions {
 
 	public static final double fixValue = 1;
 
-	public static Pair<List<Function>, List<Function>> convert(ChoiceData data, int numberOfTransitions,
-			int[] fixParameters, IvMModel model) {
+	public static List<Equation> convert(ChoiceData data, int numberOfTransitions, int[] fixParameters,
+			IvMModel model) {
 
 		FunctionFactory functionFactory = new FunctionFactoryImpl(fixValue, fixParameters);
-		List<Function> equations = new ArrayList<>();
-		List<Function> values = new ArrayList<>();
+		List<Equation> result = new ArrayList<>();
 
 		ChoiceIterator it = data.iterator();
 		while (it.hasNext()) {
@@ -78,8 +76,7 @@ public class ChoiceData2Functions {
 					}
 					Function function = functionFactory.division(b, c);
 					if (!function.isConstant() || !a.isConstant()) {
-						equations.add(function);
-						values.add(a);
+						result.add(new Equation(a.getValue(null), function, sum(executedNext)));
 					}
 
 					transitionIndex = enabledNext.nextSetBit(transitionIndex + 1);
@@ -87,7 +84,7 @@ public class ChoiceData2Functions {
 			}
 		}
 
-		return Pair.create(values, equations);
+		return result;
 	}
 
 	public static Function getTransitionWeightFunction(int[] history, int transitionIndex, int numberOfTransitions,
