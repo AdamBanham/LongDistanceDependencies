@@ -29,4 +29,8 @@ public class Division implements Function {
 	public String toLatex() {
 		return "\\frac{" + functionA.toLatex() + "}{" + functionB.toLatex() + "}";
 	}
+
+	public boolean isConstant() {
+		return functionA.isConstant() && functionB.isConstant();
+	}
 }

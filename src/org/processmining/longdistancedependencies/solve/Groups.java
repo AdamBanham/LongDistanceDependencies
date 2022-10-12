@@ -1,9 +1,9 @@
 package org.processmining.longdistancedependencies.solve;
 
+import java.util.BitSet;
 import java.util.List;
 import java.util.Set;
 
-import org.processmining.longdistancedependencies.FixedMultiset;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData.ChoiceIterator;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData2Functions;
@@ -20,28 +20,26 @@ public class Groups {
 
 	public static List<Set<Integer>> getGroups(ChoiceData data) {
 		//find groups of dependent transitions
-		List<Set<Integer>> groups;
-		{
-			Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
-			ChoiceIterator it = data.iterator();
-			while (it.hasNext()) {
-				it.next();
-				int[] executedNext = it.getExecutedNext();
 
-				//the transitions from executedNext appear together and must be merged
-				int transitionIndex = FixedMultiset.next(executedNext, -1);
-				int transitionIndexT = FixedMultiset.next(executedNext, transitionIndex);
-				while (transitionIndexT >= 0) {
+		Graph<Integer> graph = new GraphImplQuadratic<>(Integer.class);
+		
+		ChoiceIterator it = data.iterator();
+		while (it.hasNext()) {
+			it.next();
+			BitSet enabledNext = it.getEnabledNext();
 
-					graph.addEdge((Integer) transitionIndex, (Integer) transitionIndexT, 1);
-
-					transitionIndex = transitionIndexT;
-					transitionIndexT = FixedMultiset.next(executedNext, transitionIndexT);
+			//the transitions from enabledNext appear together and must be merged
+			for (int transitionA = enabledNext.nextSetBit(0); transitionA >= 0; transitionA = enabledNext
+					.nextSetBit(transitionA + 1)) {
+				for (int transitionB = enabledNext.nextSetBit(0); transitionB >= 0; transitionB = enabledNext
+						.nextSetBit(transitionB + 1)) {
+					graph.addEdge((Integer) transitionA, (Integer) transitionB, 1);
 				}
 			}
-			groups = ConnectedComponents2.compute(graph);
 		}
-		return groups;
+
+		return ConnectedComponents2.compute(graph);
+
 	}
 
 	public static TIntCollection fixParametersNotInGroup(IvMModel model, Set<Integer> group) {

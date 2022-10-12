@@ -9,9 +9,11 @@ public class LongDistanceDependenciesParametersDefault extends LongDistanceDepen
 	public final static boolean performPostProcessingDefault = true;
 	public final static boolean enableLongDistanceDependenciesDefault = true;
 	public final static double alphaDefault = 0.05;
+	public final static boolean applySymmetriesDefault = true;
 
 	public LongDistanceDependenciesParametersDefault() {
 		super(DFMMiningParametersDefault.defaultClassifier, debugDefault, numberOfThreadsDefault,
-				performPostProcessingDefault, enableLongDistanceDependenciesDefault, alphaDefault);
+				performPostProcessingDefault, enableLongDistanceDependenciesDefault, alphaDefault,
+				applySymmetriesDefault);
 	}
 }

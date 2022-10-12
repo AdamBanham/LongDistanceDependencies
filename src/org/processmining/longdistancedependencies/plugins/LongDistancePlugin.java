@@ -36,9 +36,9 @@ public class LongDistancePlugin {
 		//File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12-a.xes.gz");
 		//File modelFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/bpic12a-DFM-80.apnml");
 
-		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/test log 7.xes.gz");
+		File logFile = new File("/home/sander/Documents/svn/53 - long distance dependencies/experiments resample/0-logs/test log 20221010.xes.gz");
 		File modelFile = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/Accepting Petri net of test log 7.apnml");
+				"/home/sander/Documents/svn/53 - long distance dependencies/experiments resample/1-discoveredmodels/test log 20221010.xes.gz-FM.apnml");
 
 		//
 		//		//		AcceptingPetriNet model = AcceptingPetriNetFactory.createAcceptingPetriNet();
@@ -69,6 +69,10 @@ public class LongDistancePlugin {
 			}
 		};
 		LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
+		parameters.setAlpha(1);
+		parameters.setApplySymmetries(false);
+		parameters.setEnableLongDistanceDependencies(false);
+		parameters.setPerformPostProcessing(false);
 		parameters.setDebug(true);
 		parameters.setNumberOfThreads(1);
 

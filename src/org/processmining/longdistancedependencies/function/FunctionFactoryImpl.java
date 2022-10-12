@@ -27,7 +27,7 @@ public class FunctionFactoryImpl implements FunctionFactory {
 		if (functions.length == 1) {
 			return functions[0];
 		}
-		
+
 		List<Function> constants = new ArrayList<>();
 		List<Function> B = new ArrayList<>();
 		for (Function function : functions) {
@@ -51,6 +51,15 @@ public class FunctionFactoryImpl implements FunctionFactory {
 			return constant(constantsFactor);
 		}
 
+		if (constantsFactor == 1) {
+			if (B.size() == 1) {
+				return B.get(0);
+			}
+			Function[] Ba = new Function[B.size()];
+			B.toArray(Ba);
+			return new Product(Ba);
+		}
+
 		Function[] Ba = new Function[B.size() + 1];
 		B.toArray(Ba);
 		Ba[Ba.length - 1] = constant(constantsFactor);
@@ -58,8 +67,12 @@ public class FunctionFactoryImpl implements FunctionFactory {
 	}
 
 	public Function division(Function functionA, Function functionB) {
-		if (functionA instanceof Constant && functionB instanceof Constant) {
+		if (functionA.isConstant() && functionB.isConstant()) {
 			return constant(functionA.getValue(null) / functionB.getValue(null));
+		}
+
+		if (functionA.equals(functionB)) {
+			return constant(1);
 		}
 
 		return new Division(functionA, functionB);
@@ -69,7 +82,7 @@ public class FunctionFactoryImpl implements FunctionFactory {
 		if (functions.length == 1) {
 			return functions[0];
 		}
-		
+
 		List<Function> constants = new ArrayList<>();
 		List<Function> B = new ArrayList<>();
 		for (Function function : functions) {

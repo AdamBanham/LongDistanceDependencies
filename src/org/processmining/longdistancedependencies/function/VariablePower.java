@@ -1,5 +1,7 @@
 package org.processmining.longdistancedependencies.function;
 
+import java.util.Objects;
+
 public class VariablePower implements Function {
 
 	private final int parameterIndex;
@@ -36,4 +38,24 @@ public class VariablePower implements Function {
 		}
 		return name;
 	}
+
+	public boolean isConstant() {
+		return false;
+	}
+
+	public int hashCode() {
+		return Objects.hash(parameterIndex, power);
+	}
+
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VariablePower other = (VariablePower) obj;
+		return parameterIndex == other.parameterIndex && power == other.power;
+	}
+
 }

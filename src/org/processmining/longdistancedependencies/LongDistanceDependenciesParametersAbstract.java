@@ -10,15 +10,17 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 	private boolean performPostProcessing;
 	private boolean enableLongDistanceDependencies;
 	private double alpha;
+	private boolean applySymmetries;
 
 	public LongDistanceDependenciesParametersAbstract(XEventClassifier classifier, boolean debug, int numberofthreads,
-			boolean performPostProcessing, boolean enableLongDistanceDependencies, double alpha) {
+			boolean performPostProcessing, boolean enableLongDistanceDependencies, double alpha, boolean applySymmetries) {
 		this.classifier = classifier;
 		this.debug = debug;
 		this.numberofthreads = numberofthreads;
 		this.performPostProcessing = performPostProcessing;
 		this.enableLongDistanceDependencies = enableLongDistanceDependencies;
 		this.alpha = alpha;
+		this.applySymmetries = applySymmetries;
 	}
 
 	public XEventClassifier getClassifier() {
@@ -67,6 +69,14 @@ public abstract class LongDistanceDependenciesParametersAbstract implements Long
 
 	public void setAlpha(double alpha) {
 		this.alpha = alpha;
+	}
+
+	public boolean isApplySymmetries() {
+		return applySymmetries;
+	}
+
+	public void setApplySymmetries(boolean applySymmetries) {
+		this.applySymmetries = applySymmetries;
 	}
 
 }

@@ -28,6 +28,7 @@ import org.processmining.longdistancedependencies.postprocess.Alternatives;
 import org.processmining.longdistancedependencies.postprocess.MandatoryAndExclusive;
 import org.processmining.longdistancedependencies.solve.FixParameters;
 import org.processmining.longdistancedependencies.solve.Groups;
+import org.processmining.longdistancedependencies.solve.InitialiseWithFrequencies;
 import org.processmining.longdistancedependencies.solve.Solver;
 import org.processmining.plugins.InductiveMiner.plugins.dialogs.IMMiningDialog;
 import org.processmining.plugins.inductiveVisualMiner.helperClasses.IvMModel;
@@ -128,8 +129,8 @@ public class MineLongDistanceDependenciesPlugin {
 
 		//create choice data
 		debug(parameters, "create choice data");
-		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, model, canceller);
-		//		debug(parameters, choiceData);
+		ChoiceData choiceData = ComputeChoiceData.compute(ivmLog, resultNet, canceller);
+		debug(parameters, choiceData);
 
 		int numberOfParameters = (1 + model.getMaxNumberOfNodes()) * model.getMaxNumberOfNodes();
 		double[] result = new double[numberOfParameters];
@@ -186,9 +187,8 @@ public class MineLongDistanceDependenciesPlugin {
 			debug(parameters, "post-process");
 			MandatoryAndExclusive.postProcess(resultNet, choiceData, groups);
 			Alternatives.postProcess(resultNet, choiceData);
+			debug(parameters, resultNet);
 		}
-
-		debug(parameters, resultNet);
 	}
 
 	private static void solveGroup(IvMModel model, LongDistanceDependenciesParameters parameters,
@@ -212,7 +212,7 @@ public class MineLongDistanceDependenciesPlugin {
 		//to functions
 		Pair<List<Function>, List<Function>> equations = ChoiceData2Functions.convert(choiceData,
 				model.getMaxNumberOfNodes(), parametersToFix, model);
-		//		debug(parameters, equations);
+		debug(parameters, equations);
 
 		//create target values
 		double[] values = new double[equations.getFirst().size()];
@@ -222,10 +222,15 @@ public class MineLongDistanceDependenciesPlugin {
 			i++;
 		}
 
+		//create initial guess
+		double[] initialParameterGuesses = InitialiseWithFrequencies.guess(choiceData, model, group, parametersToFix,
+				numberOfParameters);
+
 		//solve
 		debug(parameters, "solving group " + group + " with " + (numberOfParameters - parametersToFix.length) + "/"
 				+ numberOfParameters + " parameters");
-		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix);
+		double[] groupResult = Solver.solve(values, equations.getSecond(), numberOfParameters, parametersToFix,
+				initialParameterGuesses);
 
 		debug(parameters, "group " + group + " done");
 

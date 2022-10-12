@@ -12,4 +12,6 @@ public interface Function {
 	public double getPartialDerivative(int parameterIndex, double[] parameters);
 
 	public String toLatex();
+
+	public boolean isConstant();
 }

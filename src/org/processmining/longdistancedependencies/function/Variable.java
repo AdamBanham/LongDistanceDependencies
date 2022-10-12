@@ -1,5 +1,7 @@
 package org.processmining.longdistancedependencies.function;
 
+import java.util.Objects;
+
 public class Variable implements Function {
 
 	private final int parameterIndex;
@@ -34,4 +36,24 @@ public class Variable implements Function {
 		}
 		return name;
 	}
+
+	public boolean isConstant() {
+		return false;
+	}
+
+	public int hashCode() {
+		return Objects.hash(parameterIndex);
+	}
+
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Variable other = (Variable) obj;
+		return parameterIndex == other.parameterIndex;
+	}
+
 }

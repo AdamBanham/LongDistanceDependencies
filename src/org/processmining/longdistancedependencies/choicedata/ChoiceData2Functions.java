@@ -1,6 +1,7 @@
 package org.processmining.longdistancedependencies.choicedata;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import org.apache.commons.math3.util.Pair;
@@ -38,12 +39,13 @@ public class ChoiceData2Functions {
 		while (it.hasNext()) {
 			int[] history = it.next();
 			int[] executedNext = it.getExecutedNext();
+			BitSet enabledNext = it.getEnabledNext();
 
-			if (FixedMultiset.setSizeLargerThanOne(executedNext)) {
+			if (enabledNext.cardinality() >= 2) { //if only one transition is enabled, there is nothing to equate
 
-				int transitionIndex = FixedMultiset.next(executedNext, -1);
-				
-				transitionIndex = FixedMultiset.next(executedNext, transitionIndex); //optimisation: one equality does not add any information
+				int transitionIndex = enabledNext.nextSetBit(0);
+
+				transitionIndex = enabledNext.nextSetBit(transitionIndex + 1); //optimisation: one equality does not add any information
 				while (transitionIndex >= 0) {
 
 					Function a; //weight factor from log
@@ -59,9 +61,9 @@ public class ChoiceData2Functions {
 					}
 					Function c; //below the division
 					{
-						Function[] elems = new Function[FixedMultiset.setSize(executedNext)];
+						Function[] elems = new Function[enabledNext.cardinality()];
 
-						int transitionIndexTT = FixedMultiset.next(executedNext, -1);
+						int transitionIndexTT = enabledNext.nextSetBit(0);
 						int elemIndex = 0;
 						while (transitionIndexTT >= 0) {
 
@@ -69,16 +71,18 @@ public class ChoiceData2Functions {
 									numberOfTransitions, functionFactory, model);
 
 							elemIndex++;
-							transitionIndexTT = FixedMultiset.next(executedNext, transitionIndexTT);
+							transitionIndexTT = enabledNext.nextSetBit(transitionIndexTT + 1);
 						}
 
 						c = functionFactory.sum(elems);
 					}
 					Function function = functionFactory.division(b, c);
-					equations.add(function);
-					values.add(a);
+					if (!function.isConstant() || !a.isConstant()) {
+						equations.add(function);
+						values.add(a);
+					}
 
-					transitionIndex = FixedMultiset.next(executedNext, transitionIndex);
+					transitionIndex = enabledNext.nextSetBit(transitionIndex + 1);
 				}
 			}
 		}
@@ -116,7 +120,7 @@ public class ChoiceData2Functions {
 	}
 
 	public static String getParameterNameBase(int transitionIndex, IvMModel model) {
-		return "\\parB_{" + model.getActivityName(transitionIndex) + "}";
+		return "\\parB_{" + model.getActivityName(transitionIndex) + " " + transitionIndex + "}";
 	}
 
 	public static int getParameterIndexAdjustment(int transitionIndex, int transitionIndexT, int numberOfTransitions) {

@@ -23,8 +23,8 @@ public class Solver {
 
 	//https://scipopt.org/index.php#license
 
-	public static double[] solve(double[] values, List<Function> equations, int numberOfParameters,
-			int[] fixParameters) {
+	public static double[] solve(double[] values, List<Function> equations, int numberOfParameters, int[] fixParameters,
+			double[] initialParameterValues) {
 		MultivariateJacobianFunction jfunction = new MultivariateJacobianFunction() {
 
 			public Pair<RealVector, RealMatrix> value(RealVector point) {
@@ -73,7 +73,9 @@ public class Solver {
 
 		//initial guess: all weights are equal, and no adjustments
 		RealVector initialGuess = new ArrayRealVector(numberOfParameters);
-		initialGuess.set(1);
+		for (int parameter = 0; parameter < numberOfParameters; parameter++) {
+			initialGuess.setEntry(parameter, initialParameterValues[parameter]);
+		}
 
 		//		System.out.println("Initial guess: " + initialGuess);
 		//		System.out.println("target " + Arrays.toString(values));
@@ -86,7 +88,7 @@ public class Solver {
 				.target(values)//
 				.parameterValidator(validator)//
 				.lazyEvaluation(false)//
-				.maxEvaluations(100000)//
+				.maxEvaluations(1000000)//
 				.maxIterations(100000)//
 				.build();
 		LeastSquaresOptimizer optimiser = new LevenbergMarquardtOptimizer().withCostRelativeTolerance(1.0e-12)

@@ -1,15 +1,20 @@
 package org.processmining.longdistancedependencies.choicedata;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 
 import gnu.trove.map.hash.TCustomHashMap;
+import gnu.trove.map.hash.THashMap;
 import gnu.trove.strategy.HashingStrategy;
 
-public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements ChoiceData {
+public class ChoiceDataImpl implements ChoiceData {
+
+	TCustomHashMap<int[], int[]> executed;
+	THashMap<int[], BitSet> enabled;
 
 	public ChoiceDataImpl() {
-		super(new HashingStrategy<int[]>() {
+		executed = new TCustomHashMap<>(new HashingStrategy<int[]>() {
 
 			private static final long serialVersionUID = -3776184259286538443L;
 
@@ -21,27 +26,29 @@ public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements Choi
 				return Arrays.equals(o1, o2);
 			}
 		}, 10, 0.5f);
+		enabled = new THashMap<>(10, 0.5f);
 	}
 
-	public void addExecution(int[] history, int executeNext) {
+	public void addExecution(int[] history, int executeNext, BitSet enabled) {
 		int[] nextTransitions = new int[history.length];
-		int[] nextTransitionsT = putIfAbsent(history, nextTransitions);
+		int[] nextTransitionsT = executed.putIfAbsent(history, nextTransitions);
 		if (nextTransitionsT != null) {
 			nextTransitions = nextTransitionsT;
+		} else {
+			this.enabled.put(history, enabled);
 		}
 		nextTransitions[executeNext]++;
 	}
 
 	public ChoiceIterator iterator() {
-		Iterator<int[]> it = super.keySet().iterator();
-		int size = size();
+		Iterator<int[]> it = executed.keySet().iterator();
+		int size = executed.size();
 		return new ChoiceIterator() {
 
-			int[] thisNextTransitions;
+			int[] history;
 
 			public int[] next() {
-				int[] history = it.next();
-				thisNextTransitions = get(history);
+				history = it.next();
 				return history;
 			}
 
@@ -54,7 +61,11 @@ public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements Choi
 			}
 
 			public int[] getExecutedNext() {
-				return thisNextTransitions;
+				return executed.get(history);
+			}
+
+			public BitSet getEnabledNext() {
+				return enabled.get(history);
 			}
 		};
 	}
@@ -65,10 +76,13 @@ public class ChoiceDataImpl extends TCustomHashMap<int[], int[]> implements Choi
 		for (ChoiceIterator it = iterator(); it.hasNext();) {
 			int[] history = it.next();
 			int[] executedNext = it.getExecutedNext();
+			BitSet enabledNext = it.getEnabledNext();
 
 			result.append(Arrays.toString(history));
 			result.append(" ");
 			result.append(Arrays.toString(executedNext));
+			result.append(" ");
+			result.append(enabledNext);
 			result.append("\n");
 		}
 

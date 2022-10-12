@@ -1,5 +1,7 @@
 package org.processmining.longdistancedependencies;
 
+import java.util.Arrays;
+
 public class FixedMultiset {
 
 	public static int[] init(int size) {
@@ -41,5 +43,11 @@ public class FixedMultiset {
 		}
 		next = next(multiset, next);
 		return next >= 0;
+	}
+
+	public static int[] copyAdd(int[] multiset, int element) {
+		int[] result = Arrays.copyOf(multiset, multiset.length);
+		result[element]++;
+		return result;
 	}
 }

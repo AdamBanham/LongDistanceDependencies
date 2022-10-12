@@ -54,4 +54,13 @@ public class Sum implements Function {
 
 		return result.toString();
 	}
+
+	public boolean isConstant() {
+		for (Function function : functions) {
+			if (!function.isConstant()) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

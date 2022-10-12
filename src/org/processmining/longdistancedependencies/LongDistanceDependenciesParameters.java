@@ -15,4 +15,6 @@ public interface LongDistanceDependenciesParameters {
 	public boolean isEnableLongDistanceDependencies();
 
 	public double getAlpha();
+	
+	public boolean isApplySymmetries();
 }

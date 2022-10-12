@@ -14,7 +14,7 @@ import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TIntHashSet;
 
 public class StatisticalTests {
-	public static TIntCollection remove(int numberOfTransitions, ChoiceData data,
+	public static TIntCollection fix(int numberOfTransitions, ChoiceData data,
 			TIntCollection alreadyRemovedParameters, double alpha) {
 		int numberOfTests = getNumberOfTests(numberOfTransitions, alreadyRemovedParameters);
 
