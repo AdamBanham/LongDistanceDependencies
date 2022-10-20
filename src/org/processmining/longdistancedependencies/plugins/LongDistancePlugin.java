@@ -69,10 +69,10 @@ public class LongDistancePlugin {
 			}
 		};
 		LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
-		parameters.setAlpha(1);
+		parameters.setAlpha(0.05);
 		parameters.setApplySymmetries(true);
 		parameters.setEnableLongDistanceDependencies(true);
-		parameters.setPerformPostProcessing(false);
+		parameters.setPerformPostProcessing(true);
 		parameters.setDebug(true);
 		parameters.setNumberOfThreads(1);
 
