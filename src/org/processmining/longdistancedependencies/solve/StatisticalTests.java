@@ -1,5 +1,7 @@
 package org.processmining.longdistancedependencies.solve;
 
+import java.util.BitSet;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
@@ -14,8 +16,8 @@ import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TIntHashSet;
 
 public class StatisticalTests {
-	public static TIntCollection fix(int numberOfTransitions, ChoiceData data,
-			TIntCollection alreadyRemovedParameters, double alpha) {
+	public static TIntCollection fix(int numberOfTransitions, ChoiceData data, TIntCollection alreadyRemovedParameters,
+			double alpha) {
 		int numberOfTests = getNumberOfTests(numberOfTransitions, alreadyRemovedParameters);
 
 		TIntList result = new TIntArrayList();
@@ -43,9 +45,9 @@ public class StatisticalTests {
 		{
 			for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 				int[] history = it.next();
-				int[] next = it.getExecutedNext();
+				BitSet enabled = it.getEnabledNext();
 
-				if (next[transitionA] > 0) {
+				if (enabled.get(transitionA)) {
 					maxHistoryB = Math.max(maxHistoryB, history[transitionB]);
 				}
 			}
@@ -63,8 +65,9 @@ public class StatisticalTests {
 			for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 				int[] history = it.next();
 				int[] next = it.getExecutedNext();
+				BitSet enabled = it.getEnabledNext();
 
-				if (next[transitionA] > 0) {
+				if (enabled.get(transitionA)) {
 					int histB = history[transitionB];
 
 					counts[histB][0] += sum(next) - next[transitionA];
