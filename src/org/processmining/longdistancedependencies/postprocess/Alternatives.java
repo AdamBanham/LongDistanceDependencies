@@ -122,9 +122,9 @@ public class Alternatives {
 
 		for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 			int[] history = it.next();
-			int[] next = it.getExecutedNext();
+			BitSet enabled = it.getEnabledNext();
 
-			if (next[transitionT] > 0) {
+			if (enabled.get(transitionT)) {
 
 				int sum = 0;
 				for (int transitionTp = set.nextSetBit(0); transitionTp >= 0; transitionTp = set

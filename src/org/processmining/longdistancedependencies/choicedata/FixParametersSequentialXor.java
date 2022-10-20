@@ -117,9 +117,9 @@ public class FixParametersSequentialXor {
 			ChoiceIterator it = choiceData.iterator();
 			while (it.hasNext()) {
 				int[] history = it.next();
-				int[] next = it.getExecutedNext();
+				BitSet enabled = it.getEnabledNext();
 
-				if (next[transitionA] > 0) {
+				if (enabled.get(transitionA)) {
 					//					System.out.println("  pre-fix: " + Arrays.toString(history));
 					double[] weights = new double[candidates.length];
 					for (int candidateIndex = 0; candidateIndex < candidates.length; candidateIndex++) {
@@ -209,9 +209,9 @@ public class FixParametersSequentialXor {
 		ChoiceIterator it = choiceData.iterator();
 		while (it.hasNext()) {
 			int[] history = it.next();
-			int[] next = it.getExecutedNext();
+			BitSet enabled = it.getEnabledNext();
 
-			if (next[transitionA] > 0) {
+			if (enabled.get(transitionA)) {
 				for (int transitionB = 0; transitionB < model.getMaxNumberOfNodes(); transitionB++) {
 					if (history[transitionB] > 0) {
 						appeared.set(transitionB);

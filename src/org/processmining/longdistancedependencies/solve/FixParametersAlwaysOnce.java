@@ -1,5 +1,6 @@
 package org.processmining.longdistancedependencies.solve;
 
+import java.util.BitSet;
 import java.util.Set;
 
 import org.processmining.longdistancedependencies.choicedata.ChoiceData;
@@ -37,9 +38,9 @@ public class FixParametersAlwaysOnce {
 	public static boolean alwaysOnce(ChoiceData data, int transitionA, int transitionB) {
 		for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 			int[] history = it.next();
-			int[] next = it.getExecutedNext();
+			BitSet enabled = it.getEnabledNext();
 
-			if (next[transitionA] > 0 && history[transitionB] != 1) {
+			if (enabled.get(transitionA) && history[transitionB] != 1) {
 				return false;
 			}
 		}

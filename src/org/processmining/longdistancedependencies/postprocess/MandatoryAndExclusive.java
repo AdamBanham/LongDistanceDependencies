@@ -1,5 +1,6 @@
 package org.processmining.longdistancedependencies.postprocess;
 
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +51,11 @@ public class MandatoryAndExclusive {
 	private static boolean checkTransition(Set<Integer> group, int transitionV, ChoiceData data) {
 		for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 			int[] history = it.next();
-			int[] next = it.getExecutedNext();
+			BitSet enabled = it.getEnabledNext();
 
 			if (history[transitionV] > 1) {
 				for (int transitionT : group) {
-					if (next[transitionT] > 0) {
+					if (enabled.get(transitionT)) {
 						return false;
 					}
 				}

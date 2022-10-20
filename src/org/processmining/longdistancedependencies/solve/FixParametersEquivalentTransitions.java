@@ -50,9 +50,9 @@ public class FixParametersEquivalentTransitions {
 
 			for (ChoiceIterator it = data.iterator(); it.hasNext();) {
 				int[] history = it.next();
-				int[] next = it.getExecutedNext();
+				BitSet enabled = it.getEnabledNext();
 
-				if (next[transition] > 0) {
+				if (enabled.get(transition)) {
 					for (int transitionB = transitionA + 1; transitionB < numberOfTransitions; transitionB++) {
 						if (history[transitionA] != history[transitionB]) {
 							redundantWith.clear(transitionB);
