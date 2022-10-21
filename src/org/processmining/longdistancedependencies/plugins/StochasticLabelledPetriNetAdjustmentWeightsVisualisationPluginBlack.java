@@ -158,7 +158,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 							g.drawRect((int) sourceCenter.getMinX(), (int) sourceCenter.getMinY(),
 									(int) sourceCenter.getWidth(), (int) sourceCenter.getHeight());
 							
-							((RenderableElement) svgNode).getXForm().transform(getLocationOnScreen(), getLocation());
+							((RenderableElement) svgNode).getXForm().transform(, );
 
 							svgNode = svgNode.getParent();
 						}
