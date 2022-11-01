@@ -1,9 +1,11 @@
 package org.processmining.longdistancedependencies.plugins;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -55,7 +57,8 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 	}
 
 	public static void main(String[] args) throws NumberFormatException, FileNotFoundException, IOException {
-		File file = new File("/home/sander/Desktop/bpic2020-RequestForPayment.xes.gz-DFM-LddS-1.slpna");
+		File file = new File(
+				"/home/sander/Documents/svn/53 - long distance dependencies/experiments/3-discoveredstochasticmodels/Road_Traffic_Fine_Management_Process.xes.gz-IMf-Ldd-0.slpna");
 		StochasticLabelledPetriNetAdjustmentWeightsEditable net = StochasticLabelledPetriNetAdjustmentWeightsImportPlugin
 				.read(new FileInputStream(file));
 
@@ -72,7 +75,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 		String modelEdgeColour = "#002fbb";
 		String silentTransitionColour = "#002743";
 		String textColour = ColourMap.toHexString(Color.white);
-		String dependencyEdgeColour = ColourMap.toHexString(Color.white);
+		Color dependencyEdgeColour = Color.white;
 
 		Dot dot = new Dot();
 
@@ -134,15 +137,16 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 			for (int transitionB = 0; transitionB < net.getNumberOfTransitions(); transitionB++) {
 				double adjustmentFactor = net.getTransitionAdjustmentWeight(transitionA, transitionB);
 				if (adjustmentFactor != 1.0) {
+
 					dependencyEdges.add(Triple.of(transition2dotNode.get(transitionB),
 							transition2dotNode.get(transitionA), adjustmentFactor));
 
-					DotEdge edge = dot.addEdge(transition2dotNode.get(transitionB),
-							transition2dotNode.get(transitionA));
-					edge.setOption("constraint", "false");
-					edge.setOption("color", dependencyEdgeColour);
-					edge.setOption("fontcolor", textColour);
-					edge.setLabel(f.format(adjustmentFactor));
+					//					DotEdge edge = dot.addEdge(transition2dotNode.get(transitionB),
+					//							transition2dotNode.get(transitionA));
+					//					edge.setOption("constraint", "false");
+					//					edge.setOption("color", dependencyEdgeColour);
+					//					edge.setOption("fontcolor", textColour);
+					//					edge.setLabel(f.format(adjustmentFactor));
 				}
 			}
 		}
@@ -152,61 +156,118 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 			private static final long serialVersionUID = 1L;
 
+			double[] sourceX = null;
+			double[] sourceY = null;
+			double[] targetX = null;
+			double[] targetY = null;
+
 			@Override
 			protected void paintImage(Graphics2D g) {
+				double bSize = -60; //distance of the control point from the line
+				double arrowHeadLength = 10; //length of the arrowhead
+				double arrowHeadWidth = 10; //width of the arrowhead
+
 				super.paintImage(g);
 
-				g.setColor(Color.green);
-				g.drawRect(0, 0, 100, 100);
+				if (sourceX == null) {
+					sourceX = new double[dependencyEdges.size()];
+					sourceY = new double[dependencyEdges.size()];
+					targetX = new double[dependencyEdges.size()];
+					targetY = new double[dependencyEdges.size()];
+					int i = 0;
+					for (Triple<DotNode, DotNode, Double> t : dependencyEdges) {
+						DotNode source = t.getA();
+						DotNode target = t.getB();
 
-				g.drawRect(0, 0, (int) getImage().getWidth(), (int) getImage().getHeight());
+						try {
+							Point2D centerSource = getCenter(source, image);
+							Point2D centerTarget = getCenter(target, image);
 
-				for (Triple<DotNode, DotNode, Double> t : dependencyEdges) {
-					DotNode source = t.getA();
-					DotNode target = t.getB();
+							sourceX[i] = centerSource.getX();
+							sourceY[i] = centerSource.getY();
+							targetX[i] = centerTarget.getX();
+							targetY[i] = centerTarget.getY();
+						} catch (SVGException e) {
+							e.printStackTrace();
+						}
 
-					System.out.println("source " + source);
-					try {
-						Point2D center = getCenter(source, image);
-
-						//						Point2D user = transformImage2User(
-						//								new Point2D.Double(targetCenter.getA(), targetCenter.getB()));
-						g.setColor(Color.red);
-						g.drawLine(0, 0, (int) center.getX(), (int) center.getY());
-					} catch (SVGException e) {
-						e.printStackTrace();
+						i++;
 					}
+				}
+
+				GeneralPath pathLine = new GeneralPath();
+				GeneralPath pathArrowHead = new GeneralPath();
+				for (int i = 0; i < sourceX.length; i++) {
+
+					double[] s = new double[] { sourceX[i], sourceY[i] };
+					double[] t = new double[] { targetX[i], targetY[i] };
+
+					//point m lies in between s and t
+					double[] m = halfway(s, t);
+
+					//compute normal
+					double[] n = normal(s, t);
+
+					//point b is the bezier control point
+					double[] b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(m,
+							scale(n, bSize));
+
+					//point l is the left arrowhead point; point r is the right arrowhead point
+					double[] l;
+					double[] r;
+					{
+						//point p is the first entry of the arrowhead towards t
+						double[] p = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(t,
+								scale(normalise(subtract(t, b)), -arrowHeadLength));
+
+						//find the normal of p -- t
+						double[] nbt = normal(p, t);
+
+						l = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
+								scale(nbt, 0.5 * arrowHeadWidth));
+
+						r = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
+								scale(nbt, -0.5 * arrowHeadWidth));
+					}
+
+					//line path
+					{
+						pathLine.reset();
+						pathLine.moveTo(s[0], s[1]);
+						pathLine.curveTo(b[0], b[1], b[0], b[1], t[0], t[1]);
+					}
+
+					//arrowhead path
+					{
+						pathArrowHead.reset();
+						pathArrowHead.moveTo(t[0], t[1]);
+						pathArrowHead.lineTo(l[0], l[1]);
+						pathArrowHead.lineTo(r[0], r[1]);
+					}
+
+					//paint
+					GradientPaint paint = new GradientPaint((int) s[0], (int) s[1], Color.red, (int) t[0], (int) t[1],
+							Color.white);
+					g.setPaint(paint);
+
+					//g.setColor(dependencyEdgeColour);
+					g.draw(pathLine);
+
+					g.fill(pathArrowHead);
+					
+					g.setColor(Color.black);
+					g.draw(pathArrowHead);
+
+					//g.drawRect((int) r[0] - 1, (int) r[1] - 1, 2, 2);
+					//g.drawLine((int) t[0], (int) t[1], (int) r[0], (int) r[1]);
 				}
 			}
 
-			public static Point2D getCenter(DotNode dotNode, SVGDiagram image) throws SVGException {
+			public Point2D getCenter(DotNode dotNode, SVGDiagram image) throws SVGException {
 				SVGElement svgNode = DotPanel.getSVGElementOf(image, dotNode);
-				System.out.println("start");
-				Point2D center = new Point2D.Double(((RenderableElement) svgNode).getBoundingBox().getX(),
-						((RenderableElement) svgNode).getBoundingBox().getY());
-
-				//transform it by parents
-				while (svgNode != null && svgNode instanceof RenderableElement) {
-					System.out.println(" svgNode " + svgNode);
-
-					AffineTransform xForm = ((RenderableElement) svgNode).getXForm();
-					if (xForm != null) {
-						xForm.transform(center, center);
-					}
-
-					svgNode = svgNode.getParent();
-				}
-				//				SVGElement element = DotPanel.getSVGElementOf(image, node).getChild(1);
-				//				Rectangle2D bb = null;
-				//				if (element instanceof Ellipse) {
-				//					bb = ((Ellipse) element).getBoundingBox();
-				//				} else if (element instanceof Path) {
-				//					bb = ((Path) element).getBoundingBox();
-				//				} else {
-				//					bb = DotPanel.getSVGElementOf(image, node).getBoundingBox();
-				//				}
-				//				return bb;
-				return center;
+				Rectangle2D bb = ((RenderableElement) svgNode).getBoundingBox();
+				Point2D center = new Point2D.Double(bb.getCenterX(), bb.getCenterY());
+				return transformElement2Image(center, svgNode);
 			}
 
 		};
@@ -245,5 +306,34 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 		label.append(">");
 
 		dotNode.setOption("xlabel", label.toString());
+	}
+
+	public static double[] add(double[] a, double[] b) {
+		return new double[] { a[0] + b[0], a[1] + b[1] };
+	}
+
+	public static double[] subtract(double[] a, double[] b) {
+		return new double[] { a[0] - b[0], a[1] - b[1] };
+	}
+
+	public static double[] scale(double[] a, double f) {
+		return new double[] { a[0] * f, a[1] * f };
+	}
+
+	public static double[] halfway(double[] a, double[] b) {
+		double mx = (a[0] + b[0]) / 2;
+		double my = (a[1] + b[1]) / 2;
+		return new double[] { mx, my };
+	}
+
+	public static double[] normal(double[] a, double[] b) {
+		double dx = b[0] - a[0];
+		double dy = b[1] - a[1];
+		return normalise(new double[] { -dy, dx });
+	}
+
+	public static double[] normalise(double[] a) {
+		double length = Math.sqrt(a[0] * a[0] + a[1] * a[1]);
+		return new double[] { a[0] / length, a[1] / length };
 	}
 }
