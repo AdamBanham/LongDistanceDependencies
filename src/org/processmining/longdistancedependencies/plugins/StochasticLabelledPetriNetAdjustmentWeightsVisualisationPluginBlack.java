@@ -69,14 +69,20 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	String backgroundColour = "#011422";
+	String modelEdgeColour = "#002fbb";
+	String silentTransitionColour = "#002743";
+	String textColour = ColourMap.toHexString(Color.white);
+	Color dependencyEdgeColourTarget = Color.white;
+	Color dependencyEdgeColourSourceNegative = Color.red;
+	Color dependencyEdgeColourSourcePositive = Color.green;
+
+	double bSize = -60; //distance of the control point from the line
+	double arrowHeadLength = 10; //length of the arrowhead
+	double arrowHeadWidth = 10; //width of the arrowhead
+
 	@Override
 	public DotPanel visualise(StochasticLabelledPetriNetAdjustmentWeights net) {
-		String backgroundColour = "#011422";
-		String modelEdgeColour = "#002fbb";
-		String silentTransitionColour = "#002743";
-		String textColour = ColourMap.toHexString(Color.white);
-		Color dependencyEdgeColour = Color.white;
-
 		Dot dot = new Dot();
 
 		dot.setOption("forcelabels", "true");
@@ -161,13 +167,10 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 			double[][] Ab = null;
 			double[][] Al = null;
 			double[][] Ar = null;
+			boolean[] Apositive = null;
 
 			@Override
 			protected void paintImage(Graphics2D g) {
-				double bSize = -60; //distance of the control point from the line
-				double arrowHeadLength = 10; //length of the arrowhead
-				double arrowHeadWidth = 10; //width of the arrowhead
-
 				super.paintImage(g);
 
 				if (As == null) {
@@ -176,6 +179,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 					Ab = new double[dependencyEdges.size()][];
 					Al = new double[dependencyEdges.size()][];
 					Ar = new double[dependencyEdges.size()][];
+					Apositive = new boolean[dependencyEdges.size()];
 					int i = 0;
 					for (Triple<DotNode, DotNode, Double> triple : dependencyEdges) {
 						DotNode source = triple.getA();
@@ -214,11 +218,14 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 										scale(nbt, -0.5 * arrowHeadWidth));
 							}
 
+							boolean positive = triple.getC() > 1;
+
 							As[i] = s;
 							At[i] = t;
 							Ab[i] = b;
 							Al[i] = l;
 							Ar[i] = r;
+							Apositive[i] = positive;
 
 						} catch (SVGException e) {
 							e.printStackTrace();
@@ -237,6 +244,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 					double[] b = Ab[i];
 					double[] l = Al[i];
 					double[] r = Ar[i];
+					boolean positive = Apositive[i];
 
 					//line path
 					{
@@ -254,8 +262,10 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 					}
 
 					//paint
-					GradientPaint paint = new GradientPaint((int) s[0], (int) s[1], Color.red, (int) t[0], (int) t[1],
-							Color.white);
+					Color sourceColour = positive ? dependencyEdgeColourSourcePositive
+							: dependencyEdgeColourSourceNegative;
+					GradientPaint paint = new GradientPaint((int) s[0], (int) s[1], sourceColour, (int) t[0],
+							(int) t[1], dependencyEdgeColourTarget);
 					g.setPaint(paint);
 
 					//g.setCaolor(dependencyEdgeColour);
