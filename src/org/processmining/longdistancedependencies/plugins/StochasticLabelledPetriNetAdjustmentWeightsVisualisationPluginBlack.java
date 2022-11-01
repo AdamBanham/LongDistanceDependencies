@@ -2,12 +2,18 @@ package org.processmining.longdistancedependencies.plugins;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.contexts.uitopia.annotations.Visualizer;
@@ -17,6 +23,7 @@ import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdjustmentWeights;
+import org.processmining.longdistancedependencies.StochasticLabelledPetriNetAdjustmentWeightsEditable;
 import org.processmining.plugins.InductiveMiner.Triple;
 import org.processmining.plugins.InductiveMiner.plugins.dialogs.IMMiningDialog;
 import org.processmining.plugins.graphviz.colourMaps.ColourMap;
@@ -26,8 +33,6 @@ import org.processmining.plugins.graphviz.dot.DotNode;
 import org.processmining.plugins.graphviz.visualisation.DotPanel;
 import org.processmining.stochasticlabelledpetrinets.plugins.StochasticLabelledPetriNetVisualisationPlugin;
 
-import com.kitfox.svg.Ellipse;
-import com.kitfox.svg.Path;
 import com.kitfox.svg.RenderableElement;
 import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGElement;
@@ -47,6 +52,18 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 	public JComponent visualise(final PluginContext context, StochasticLabelledPetriNetAdjustmentWeights net,
 			ProMCanceller canceller) {
 		return visualise(net);
+	}
+
+	public static void main(String[] args) throws NumberFormatException, FileNotFoundException, IOException {
+		File file = new File("/home/sander/Desktop/bpic2020-RequestForPayment.xes.gz-DFM-LddS-1.slpna");
+		StochasticLabelledPetriNetAdjustmentWeightsEditable net = StochasticLabelledPetriNetAdjustmentWeightsImportPlugin
+				.read(new FileInputStream(file));
+
+		JFrame frame = new JFrame("Mein JFrame Beispiel");
+		frame.setSize(400, 400);
+		frame.add(new StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack().visualise(net));
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	@Override
@@ -150,39 +167,46 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 					System.out.println("source " + source);
 					try {
-						SVGElement svgNode = DotPanel.getSVGElementOf(image, source);
-						while (svgNode != null && svgNode instanceof RenderableElement) {
-							System.out.println(" svgNode " + svgNode);
-							Rectangle2D sourceCenter = ((RenderableElement) svgNode).getBoundingBox();
-							g.setColor(Color.blue);
-							g.drawRect((int) sourceCenter.getMinX(), (int) sourceCenter.getMinY(),
-									(int) sourceCenter.getWidth(), (int) sourceCenter.getHeight());
-							
-							((RenderableElement) svgNode).getXForm().transform(, );
-
-							svgNode = svgNode.getParent();
-						}
+						Point2D center = getCenter(source, image);
 
 						//						Point2D user = transformImage2User(
 						//								new Point2D.Double(targetCenter.getA(), targetCenter.getB()));
-						//g.drawLine(0, 0, (int) (double) user.getX(), (int) -user.getY());
+						g.setColor(Color.red);
+						g.drawLine(0, 0, (int) center.getX(), (int) center.getY());
 					} catch (SVGException e) {
 						e.printStackTrace();
 					}
 				}
 			}
 
-			public static Rectangle2D getCenter(DotNode node, SVGDiagram image) throws SVGException {
-				SVGElement element = DotPanel.getSVGElementOf(image, node).getChild(1);
-				Rectangle2D bb = null;
-				if (element instanceof Ellipse) {
-					bb = ((Ellipse) element).getBoundingBox();
-				} else if (element instanceof Path) {
-					bb = ((Path) element).getBoundingBox();
-				} else {
-					bb = DotPanel.getSVGElementOf(image, node).getBoundingBox();
+			public static Point2D getCenter(DotNode dotNode, SVGDiagram image) throws SVGException {
+				SVGElement svgNode = DotPanel.getSVGElementOf(image, dotNode);
+				System.out.println("start");
+				Point2D center = new Point2D.Double(((RenderableElement) svgNode).getBoundingBox().getX(),
+						((RenderableElement) svgNode).getBoundingBox().getY());
+
+				//transform it by parents
+				while (svgNode != null && svgNode instanceof RenderableElement) {
+					System.out.println(" svgNode " + svgNode);
+
+					AffineTransform xForm = ((RenderableElement) svgNode).getXForm();
+					if (xForm != null) {
+						xForm.transform(center, center);
+					}
+
+					svgNode = svgNode.getParent();
 				}
-				return bb;
+				//				SVGElement element = DotPanel.getSVGElementOf(image, node).getChild(1);
+				//				Rectangle2D bb = null;
+				//				if (element instanceof Ellipse) {
+				//					bb = ((Ellipse) element).getBoundingBox();
+				//				} else if (element instanceof Path) {
+				//					bb = ((Path) element).getBoundingBox();
+				//				} else {
+				//					bb = DotPanel.getSVGElementOf(image, node).getBoundingBox();
+				//				}
+				//				return bb;
+				return center;
 			}
 
 		};
