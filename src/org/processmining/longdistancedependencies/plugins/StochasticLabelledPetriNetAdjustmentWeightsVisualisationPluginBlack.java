@@ -156,10 +156,11 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 			private static final long serialVersionUID = 1L;
 
-			double[] sourceX = null;
-			double[] sourceY = null;
-			double[] targetX = null;
-			double[] targetY = null;
+			double[][] As = null;
+			double[][] At = null;
+			double[][] Ab = null;
+			double[][] Al = null;
+			double[][] Ar = null;
 
 			@Override
 			protected void paintImage(Graphics2D g) {
@@ -169,24 +170,56 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 				super.paintImage(g);
 
-				if (sourceX == null) {
-					sourceX = new double[dependencyEdges.size()];
-					sourceY = new double[dependencyEdges.size()];
-					targetX = new double[dependencyEdges.size()];
-					targetY = new double[dependencyEdges.size()];
+				if (As == null) {
+					As = new double[dependencyEdges.size()][];
+					At = new double[dependencyEdges.size()][];
+					Ab = new double[dependencyEdges.size()][];
+					Al = new double[dependencyEdges.size()][];
+					Ar = new double[dependencyEdges.size()][];
 					int i = 0;
-					for (Triple<DotNode, DotNode, Double> t : dependencyEdges) {
-						DotNode source = t.getA();
-						DotNode target = t.getB();
+					for (Triple<DotNode, DotNode, Double> triple : dependencyEdges) {
+						DotNode source = triple.getA();
+						DotNode target = triple.getB();
 
 						try {
-							Point2D centerSource = getCenter(source, image);
-							Point2D centerTarget = getCenter(target, image);
+							Rectangle2D bbSource = getBoundingBox(source, image);
+							Rectangle2D bbTarget = getBoundingBox(target, image);
 
-							sourceX[i] = centerSource.getX();
-							sourceY[i] = centerSource.getY();
-							targetX[i] = centerTarget.getX();
-							targetY[i] = centerTarget.getY();
+							double[] middleSource = new double[] { bbSource.getCenterX(), bbSource.getCenterY() };
+							double[] middleTarget = new double[] { bbTarget.getCenterX(), bbTarget.getCenterY() };
+							double[] initialB = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(
+									halfway(middleSource, middleTarget),
+									scale(normal(middleSource, middleTarget), bSize)); //bezier control point
+
+							double[] s = getClosestAnchor(bbSource, initialB);
+							double[] t = getClosestAnchor(bbTarget, initialB);
+							double[] b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
+									.add(halfway(s, t), scale(normal(s, t), bSize)); //bezier control point
+
+							//point l is the left arrowhead point; point r is the right arrowhead point
+							double[] l;
+							double[] r;
+							{
+								//point p is the first entry of the arrowhead towards t
+								double[] p = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(t,
+										scale(normalise(subtract(t, b)), -arrowHeadLength));
+
+								//find the normal of p -- t
+								double[] nbt = normal(p, t);
+
+								l = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
+										scale(nbt, 0.5 * arrowHeadWidth));
+
+								r = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
+										scale(nbt, -0.5 * arrowHeadWidth));
+							}
+
+							As[i] = s;
+							At[i] = t;
+							Ab[i] = b;
+							Al[i] = l;
+							Ar[i] = r;
+
 						} catch (SVGException e) {
 							e.printStackTrace();
 						}
@@ -197,38 +230,13 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 				GeneralPath pathLine = new GeneralPath();
 				GeneralPath pathArrowHead = new GeneralPath();
-				for (int i = 0; i < sourceX.length; i++) {
+				for (int i = 0; i < As.length; i++) {
 
-					double[] s = new double[] { sourceX[i], sourceY[i] };
-					double[] t = new double[] { targetX[i], targetY[i] };
-
-					//point m lies in between s and t
-					double[] m = halfway(s, t);
-
-					//compute normal
-					double[] n = normal(s, t);
-
-					//point b is the bezier control point
-					double[] b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(m,
-							scale(n, bSize));
-
-					//point l is the left arrowhead point; point r is the right arrowhead point
-					double[] l;
-					double[] r;
-					{
-						//point p is the first entry of the arrowhead towards t
-						double[] p = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(t,
-								scale(normalise(subtract(t, b)), -arrowHeadLength));
-
-						//find the normal of p -- t
-						double[] nbt = normal(p, t);
-
-						l = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
-								scale(nbt, 0.5 * arrowHeadWidth));
-
-						r = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(p,
-								scale(nbt, -0.5 * arrowHeadWidth));
-					}
+					double[] s = As[i];
+					double[] t = At[i];
+					double[] b = Ab[i];
+					double[] l = Al[i];
+					double[] r = Ar[i];
 
 					//line path
 					{
@@ -250,11 +258,11 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 							Color.white);
 					g.setPaint(paint);
 
-					//g.setColor(dependencyEdgeColour);
+					//g.setCaolor(dependencyEdgeColour);
 					g.draw(pathLine);
 
 					g.fill(pathArrowHead);
-					
+
 					g.setColor(Color.black);
 					g.draw(pathArrowHead);
 
@@ -263,11 +271,16 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 				}
 			}
 
-			public Point2D getCenter(DotNode dotNode, SVGDiagram image) throws SVGException {
-				SVGElement svgNode = DotPanel.getSVGElementOf(image, dotNode);
+			public Rectangle2D getBoundingBox(DotNode dotNode, SVGDiagram image) throws SVGException {
+				SVGElement svgNode = DotPanel.getSVGElementOf(image, dotNode).getChild(1);
 				Rectangle2D bb = ((RenderableElement) svgNode).getBoundingBox();
-				Point2D center = new Point2D.Double(bb.getCenterX(), bb.getCenterY());
-				return transformElement2Image(center, svgNode);
+
+				Point2D a = new Point2D.Double(bb.getMinX(), bb.getMinY());
+				Point2D b = new Point2D.Double(bb.getMaxX(), bb.getMaxY());
+				Point2D ra = transformElement2Image(a, svgNode);
+				Point2D rb = transformElement2Image(b, svgNode);
+
+				return new Rectangle2D.Double(ra.getX(), ra.getY(), rb.getX() - ra.getX(), rb.getY() - ra.getY());
 			}
 
 		};
@@ -335,5 +348,13 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 	public static double[] normalise(double[] a) {
 		double length = Math.sqrt(a[0] * a[0] + a[1] * a[1]);
 		return new double[] { a[0] / length, a[1] / length };
+	}
+
+	public static double[] getClosestAnchor(Rectangle2D rectangle, double[] point) {
+		return new double[] { // 
+				Math.max(rectangle.getCenterX() - rectangle.getWidth() / 2,
+						Math.min(point[0], rectangle.getCenterX() + rectangle.getWidth() / 2)), //
+				Math.max(rectangle.getCenterY() - rectangle.getHeight() / 2,
+						Math.min(point[1], rectangle.getCenterY() + rectangle.getHeight() / 2)) };
 	}
 }
