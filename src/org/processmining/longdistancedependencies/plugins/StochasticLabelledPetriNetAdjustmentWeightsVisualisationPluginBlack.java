@@ -207,6 +207,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 					pathArrowHead.moveTo(t[0], t[1]);
 					pathArrowHead.lineTo(l[0], l[1]);
 					pathArrowHead.lineTo(r[0], r[1]);
+					pathArrowHead.closePath();
 				}
 
 				//paint
