@@ -58,8 +58,10 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 	}
 
 	public static void main(String[] args) throws NumberFormatException, FileNotFoundException, IOException {
+		//		File file = new File(
+		//				"/home/sander/Documents/svn/53 - long distance dependencies/experiments/3-discoveredstochasticmodels/Road_Traffic_Fine_Management_Process.xes.gz-IMf-Ldd-0.slpna");
 		File file = new File(
-				"/home/sander/Documents/svn/53 - long distance dependencies/experiments/3-discoveredstochasticmodels/Road_Traffic_Fine_Management_Process.xes.gz-IMf-Ldd-0.slpna");
+				"/home/sander/Documents/svn/53 - long distance dependencies/02 - experiments qualitative/bpic2020-RequestForPayment.xes.gz-DFM-LddS-0.slpna");
 		StochasticLabelledPetriNetAdjustmentWeightsEditable net = StochasticLabelledPetriNetAdjustmentWeightsImportPlugin
 				.read(new FileInputStream(file));
 
@@ -125,19 +127,31 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 				DotNode source = triple.getA();
 				DotNode target = triple.getB();
 
+				double[] s;
+				double[] t;
+				double[] b;
 				try {
-					Rectangle2D bbSource = getBoundingBox(source, image);
-					Rectangle2D bbTarget = getBoundingBox(target, image);
+					if (source == target) {
+						Rectangle2D bb = getBoundingBox(source, image);
+						s = new double[] { bb.getMaxX(), bb.getCenterY() - bb.getHeight() * 0.25 };
+						t = new double[] { bb.getMaxX(), bb.getCenterY() + bb.getHeight() * 0.25 };
 
-					double[] middleSource = new double[] { bbSource.getCenterX(), bbSource.getCenterY() };
-					double[] middleTarget = new double[] { bbTarget.getCenterX(), bbTarget.getCenterY() };
-					double[] initialB = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
-							.add(halfway(middleSource, middleTarget), scale(normal(middleSource, middleTarget), bSize)); //bezier control point
+						b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(halfway(s, t),
+								scale(normal(s, t), bSize)); //bezier control point
+					} else {
+						Rectangle2D bbSource = getBoundingBox(source, image);
+						Rectangle2D bbTarget = getBoundingBox(target, image);
 
-					double[] s = getClosestAnchor(bbSource, initialB);
-					double[] t = getClosestAnchor(bbTarget, initialB);
-					double[] b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(halfway(s, t),
-							scale(normal(s, t), bSize)); //bezier control point
+						double[] middleSource = new double[] { bbSource.getCenterX(), bbSource.getCenterY() };
+						double[] middleTarget = new double[] { bbTarget.getCenterX(), bbTarget.getCenterY() };
+						double[] initialB = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(
+								halfway(middleSource, middleTarget), scale(normal(middleSource, middleTarget), bSize)); //bezier control point
+
+						s = getClosestAnchor(bbSource, initialB);
+						t = getClosestAnchor(bbTarget, initialB);
+						b = StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack.add(halfway(s, t),
+								scale(normal(s, t), bSize)); //bezier control point
+					}
 
 					//point l is the left arrowhead point; point r is the right arrowhead point
 					double[] l;
@@ -240,6 +254,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 			return new Rectangle2D.Double(ra.getX(), ra.getY(), rb.getX() - ra.getX(), rb.getY() - ra.getY());
 		}
+
 	}
 
 	@Override
@@ -307,13 +322,6 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 
 					dependencyEdges.add(Triple.of(transition2dotNode.get(transitionB),
 							transition2dotNode.get(transitionA), adjustmentFactor));
-
-					//					DotEdge edge = dot.addEdge(transition2dotNode.get(transitionB),
-					//							transition2dotNode.get(transitionA));
-					//					edge.setOption("constraint", "false");
-					//					edge.setOption("color", dependencyEdgeColour);
-					//					edge.setOption("fontcolor", textColour);
-					//					edge.setLabel(f.format(adjustmentFactor));
 				}
 			}
 		}

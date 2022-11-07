@@ -43,8 +43,11 @@ public class FixParameters {
 			// Fix all parameters for which no observations have been made
 			result.addAll(FixParametersNeverInHistory.fix(numberOfTransitions, data, group));
 
-			//Fix all parameters where B is mandatory before A anyway
+			// Fix all parameters where B is mandatory before A anyway
 			result.addAll(FixParametersAlwaysOnce.fix(numberOfTransitions, data, group));
+
+			// Fix all parameters where B and C appear the same number of times before A
+			result.addAll(FixParametersEquivalentTransitions.fix(numberOfTransitions, data, group));
 
 			// Pick an arbitrary transition from the group and fix all of its parameters.
 			result.addAll(FixParametersArbitraryFromGroup.fix(model, group, result));
