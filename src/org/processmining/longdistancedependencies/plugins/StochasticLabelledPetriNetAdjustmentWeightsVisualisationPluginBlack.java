@@ -284,7 +284,7 @@ public class StochasticLabelledPetriNetAdjustmentWeightsVisualisationPluginBlack
 			DotNode dotNode;
 
 			if (net.isTransitionSilent(transition)) {
-				dotNode = dot.addNode("" + transition);
+				dotNode = dot.addNode(" ");
 				dotNode.setOption("style", "filled");
 				dotNode.setOption("fillcolor", silentTransitionColour);
 			} else {
