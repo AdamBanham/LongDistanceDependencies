@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
 import org.processmining.longdistancedependencies.LongDistanceDependenciesParametersWrapper;
@@ -18,13 +17,8 @@ import lpsolve.LpSolveException;
 
 public class InitialiseWithFrequencies {
 
-	public static double[] guess(ChoiceData choiceData, IvMModel model, Set<Integer> group, int[] parametersToFix,
-			int numberOfParameters, LongDistanceDependenciesParameters parameters, ProMCanceller canceller)
-			throws LpSolveException {
-		//assume for now that there are no parameters fixed
-		for (int transition : group) {
-			assert !ArrayUtils.contains(parametersToFix, ChoiceData2Functions.getParameterIndexBase(transition));
-		}
+	public static double[] guess(ChoiceData choiceData, IvMModel model, Set<Integer> group, int numberOfParameters,
+			LongDistanceDependenciesParameters parameters, ProMCanceller canceller) throws LpSolveException {
 
 		if (parameters.isEnableLongDistanceDependencies()) {
 			//if the long-distance dependencies are enabled, we guess the base weights first, separately, as an initialisation
@@ -39,7 +33,7 @@ public class InitialiseWithFrequencies {
 			Arrays.fill(initialParameterGuess, 1);
 			List<Equation> equationsGuess = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
 					parametersToFixGuess, model);
-			double[] groupResult = Solver.solve(equationsGuess, numberOfParameters, parametersToFix,
+			double[] groupResult = Solver.solve(equationsGuess, numberOfParameters, parametersToFixGuess,
 					initialParameterGuess);
 
 			MineLongDistanceDependenciesPlugin.debug(parameters, " result of initial guess run: " + groupResult);

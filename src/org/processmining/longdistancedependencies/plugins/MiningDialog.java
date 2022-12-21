@@ -13,6 +13,10 @@ import java.net.URISyntaxException;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.deckfour.xes.model.XLog;
 import org.processmining.longdistancedependencies.LongDistanceDependenciesParameters;
@@ -28,6 +32,9 @@ public class MiningDialog extends JPanel {
 	private final JLabel doiLabel;
 	private final JLabel doiValue;
 	private final ClassifierChooser classifiers;
+	private final JSlider significanceSlider;
+	private final JLabel significanceValue;
+	private final String significanceFormat = "%,.2f";
 	private final String doi = "TODO: doi";
 
 	private final LongDistanceDependenciesParametersAbstract parameters = new LongDistanceDependenciesParametersDefault();
@@ -70,6 +77,63 @@ public class MiningDialog extends JPanel {
 		}
 
 		gridy++;
+
+		//spacer
+		{
+			JLabel spacer = factory.createLabel(" ");
+			GridBagConstraints cSpacer = new GridBagConstraints();
+			cSpacer.gridx = 0;
+			cSpacer.gridy = gridy;
+			cSpacer.anchor = GridBagConstraints.WEST;
+			add(spacer, cSpacer);
+		}
+
+		gridy++;
+
+		//significance
+		{
+			JLabel significanceLabel = factory.createLabel("Significance α");
+			GridBagConstraints cSignificanceLabel = new GridBagConstraints();
+			cSignificanceLabel.gridx = 0;
+			cSignificanceLabel.gridy = gridy;
+			cSignificanceLabel.weightx = 0.4;
+			cSignificanceLabel.anchor = GridBagConstraints.NORTHWEST;
+			add(significanceLabel, cSignificanceLabel);
+		}
+
+		significanceValue = factory.createLabel(String.format(significanceFormat, getParameters().getAlpha()));
+		{
+			significanceSlider = factory.createSlider(SwingConstants.HORIZONTAL);
+			significanceSlider.setMinimum(0);
+			significanceSlider.setMaximum(1000);
+			significanceSlider.setValue((int) (getParameters().getAlpha() * 1000));
+			significanceSlider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					parameters.setAlpha(significanceSlider.getValue() / 1000.0);
+					significanceValue.setText(String.format(significanceFormat, getParameters().getAlpha()));
+				}
+			});
+
+			GridBagConstraints cSignificanceSlider = new GridBagConstraints();
+			cSignificanceSlider.gridx = 1;
+			cSignificanceSlider.gridy = gridy;
+			cSignificanceSlider.anchor = GridBagConstraints.NORTHWEST;
+			cSignificanceSlider.fill = GridBagConstraints.HORIZONTAL;
+			cSignificanceSlider.weightx = 0.6;
+			add(significanceSlider, cSignificanceSlider);
+		}
+
+		gridy++;
+
+		{
+			GridBagConstraints cSignificanceValue = new GridBagConstraints();
+			cSignificanceValue.gridx = 1;
+			cSignificanceValue.gridy = gridy;
+			cSignificanceValue.anchor = GridBagConstraints.NORTHWEST;
+			cSignificanceValue.fill = GridBagConstraints.HORIZONTAL;
+			cSignificanceValue.weightx = 0.6;
+			add(significanceValue, cSignificanceValue);
+		}
 
 		//spacer
 		{

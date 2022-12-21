@@ -39,7 +39,7 @@ import lpsolve.LpSolveException;
 
 public class MineLongDistanceDependenciesPlugin {
 
-	@Plugin(name = "Mine long-distance dependencies (APN)", level = PluginLevel.Regular, returnLabels = {
+	@Plugin(name = "Discover stochastic model with long-distance dependencies on an accepting Petri net", level = PluginLevel.Regular, returnLabels = {
 			"Stochastic labelled Petri net with long-distance dependencies" }, returnTypes = {
 					StochasticLabelledPetriNetAdjustmentWeights.class }, parameterLabels = { "Accepting Petri net",
 							"Log" }, userAccessible = true)
@@ -204,6 +204,10 @@ public class MineLongDistanceDependenciesPlugin {
 			return;
 		}
 
+		//create initial guess
+		double[] initialParameterGuesses = InitialiseWithFrequencies.guess(choiceData, model, group, numberOfParameters,
+				parameters, canceller);
+
 		//fix parameters
 		int[] parametersToFix = FixParameters.getParametersToFix(choiceData, model, group, parameters, canceller);
 		//		debug(parameters, "fixed parameters " + Arrays.toString(parametersToFix));
@@ -212,10 +216,6 @@ public class MineLongDistanceDependenciesPlugin {
 		List<Equation> equations = ChoiceData2Functions.convert(choiceData, model.getMaxNumberOfNodes(),
 				parametersToFix, model);
 		//debug(parameters, equations);
-
-		//create initial guess
-		double[] initialParameterGuesses = InitialiseWithFrequencies.guess(choiceData, model, group, parametersToFix,
-				numberOfParameters, parameters, canceller);
 
 		//solve
 		debug(parameters, "solving group " + group + " with " + (numberOfParameters - parametersToFix.length) + "/"
