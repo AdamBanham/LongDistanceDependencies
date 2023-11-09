@@ -1,0 +1,13 @@
+
+					<packages>
+						<package name="LongDistanceDependencies" version="6.14.5" os="all" url="LongDistanceDependencies/LongDistanceDependencies-6.14.5-all.zip" desc="LongDistanceDependencies" org="RWTH Aachen" license="GPL" author="Sander Leemans" auto="false" hasPlugins="true" logo="prom_subtitle_hat_300.png">
+				    	<dependency org="prom" name="ProM-Plugins" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="BasicUtils" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="Widgets" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="InductiveVisualMiner" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="AcceptingPetriNet" rev="latest" changing="true" transitive="true" />
+    	<dependency org="prom" name="LpSolve" rev="latest" changing="true" transitive="true" />
+
+						</package>
+					</packages>
+				
