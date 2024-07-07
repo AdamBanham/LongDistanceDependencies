@@ -1,7 +1,5 @@
 package org.processmining.longdistancedependencies.function;
 
-import com.util.Arrays;
-
 public class FunctionFactoryNonReducing implements FunctionFactory {
 
 	private final int[] fixParameters;
@@ -37,14 +35,14 @@ public class FunctionFactoryNonReducing implements FunctionFactory {
 	}
 
 	public Function variablePower(int parameterIndex, String name, int power) {
-		if (Arrays.contains(fixParameters, parameterIndex)) {
+		if (parameterIndex < fixParameters.length) {
 			return constant(1);
 		}
 		return new VariablePower(parameterIndex, name, power);
 	}
 
 	public Function variable(int parameterIndex, String name) {
-		if (Arrays.contains(fixParameters, parameterIndex)) {
+		if (parameterIndex < fixParameters.length) {
 			return constant(fixValue);
 		}
 		return new Variable(parameterIndex, name);

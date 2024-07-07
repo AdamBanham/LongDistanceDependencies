@@ -2,8 +2,7 @@ package org.processmining.longdistancedependencies.function;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.util.Arrays;
+import java.util.Arrays;
 
 public class FunctionFactoryImpl implements FunctionFactory {
 
@@ -120,14 +119,14 @@ public class FunctionFactoryImpl implements FunctionFactory {
 		if (power == 1) {
 			return variable(parameterIndex, name);
 		}
-		if (Arrays.contains(fixParameters, parameterIndex)) {
+		if (parameterIndex < fixParameters.length) {
 			return constant(1);
 		}
 		return new VariablePower(parameterIndex, name, power);
 	}
 
 	public Function variable(int parameterIndex, String name) {
-		if (Arrays.contains(fixParameters, parameterIndex)) {
+		if (parameterIndex < fixParameters.length) {
 			return constant(fixValue);
 		}
 		return new Variable(parameterIndex, name);
