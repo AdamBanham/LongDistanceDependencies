@@ -23,6 +23,9 @@ public class Solver {
 	//other solvers:
 
 	//https://scipopt.org/index.php#license
+	
+	private static double LOWEST_PARAM_VAL = 0.001;
+	private static double HIGHEST_PARAM_VAL = Double.MAX_VALUE - 1.0;
 
 	/**
 	 * 
@@ -74,9 +77,23 @@ public class Solver {
 			public RealVector validate(RealVector params) {
 				//				System.out.println("validate " + params);
 				for (int i = 0; i < params.getDimension(); i++) {
-					if (params.getEntry(i) < 0) {
-						params.setEntry(i, 0);
-					} else if (fixedParametersb.get(i)) {
+					if (params.getEntry(i) < LOWEST_PARAM_VAL) {
+						params.setEntry(i, 
+								Double.min(
+									LOWEST_PARAM_VAL * 2, 
+									HIGHEST_PARAM_VAL
+								)
+						);
+					} else if (params.getEntry(i) > HIGHEST_PARAM_VAL) {
+						params.setEntry(i, 
+								Double.max(
+									LOWEST_PARAM_VAL,
+									HIGHEST_PARAM_VAL - 
+									((HIGHEST_PARAM_VAL - LOWEST_PARAM_VAL)/2.0)
+								)
+						);
+					}
+					else if (fixedParametersb.get(i)) {
 						params.setEntry(i, 1);
 					}
 				}
